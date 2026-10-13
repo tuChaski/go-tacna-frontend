@@ -6,7 +6,7 @@ const HomePage = () => <div className="p-8 text-2xl font-bold">Mapa / Consulta P
 const LoginPage = () => <div className="p-8 text-2xl font-bold">Pantalla de Login</div>;
 const AdminDashboard = () => <div className="p-8 text-2xl font-bold">Panel de Administración de Flotas</div>;
 
-const ProtectedRoute = ({ children, allowedRoles }: { children: JSX.Element; allowedRoles?: string[] }) => {
+const ProtectedRoute = ({ children, allowedRoles }: { children: React.JSX.Element; allowedRoles?: string[] }) => {
   const { isAuthenticated, user, isLoading } = useAuth();
 
   if (isLoading) return <div className="flex h-screen items-center justify-center">Cargando...</div>;
