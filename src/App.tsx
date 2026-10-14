@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth';
 
 // Páginas placeholder que crearemos a continuación
 const HomePage = () => <div className="p-8 text-2xl font-bold">Mapa / Consulta Pública de Rutas (Tacna)</div>;
