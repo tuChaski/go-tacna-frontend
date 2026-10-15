@@ -3,11 +3,9 @@ import {
   Bus, 
   ArrowRight, 
   CheckCircle2, 
-  Navigation, 
   Radio, 
   Layers, 
   Clock, 
-  ShieldCheck,
   Compass,
   Cpu
 } from 'lucide-react';
