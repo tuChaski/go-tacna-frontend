@@ -42,6 +42,9 @@
 .admin-record-name, .admin-record-key { display: block; }
 .admin-record-name { font-weight: 500; }
 .admin-record-key { margin-top: 8px; color: var(--admin-muted); font-size: 14px; line-height: 20px; }
+/* Los documentos y correos largos deben adaptarse a las fichas en móvil. */
+.admin-record-key { overflow-wrap: anywhere; }
+.admin-conductor-actions { margin-top: 24px; }
 .admin-row-actions { display: flex; gap: 8px; }
 .admin-row-actions .admin-button { width: 125px; flex: 0 0 125px; }
 .admin-small { font-size: 14px; line-height: 20px; }

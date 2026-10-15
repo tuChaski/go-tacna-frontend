@@ -1,8 +1,10 @@
+/** Inicio del administrador de empresa con accesos a los módulos disponibles para revisión. */
 import { Link } from 'react-router-dom';
 import { ArrowRight, BusFront, Route, Users } from 'lucide-react';
-import { PageHeading } from './components/PageHeading';
-import { PendingNotice } from './components/PendingNotice';
-import { routesPreviewPath } from './routes/route-reference';
+import { PageHeading } from './componentes/PageHeading';
+import { PendingNotice } from './componentes/PendingNotice';
+import { routesPreviewPath } from './rutas/route-reference';
+import { rutaConductores } from './conductores/conductor-referencia';
 
 export function CompanyHome() {
   return <>
@@ -11,7 +13,12 @@ export function CompanyHome() {
     <div className="admin-module-grid">
       <section className="admin-card admin-context"><span className="admin-icon-tile"><Route size={24} aria-hidden="true" /></span><h2>Rutas</h2><p className="admin-muted">Consulta recorridos, completa sus datos y revisa las acciones disponibles.</p><Link className="admin-back-link" to={routesPreviewPath}>Ver rutas<ArrowRight size={18} aria-hidden="true" /></Link></section>
       <section className="admin-card admin-context"><BusFront size={24} aria-hidden="true" /><h2>Micros</h2><p className="admin-muted">Asociación de unidades, rutas y conductores.</p><span className="admin-small admin-muted">Pantallas pendientes</span></section>
-      <section className="admin-card admin-context"><Users size={24} aria-hidden="true" /><h2>Conductores</h2><p className="admin-muted">Datos y credenciales de los conductores de la empresa.</p><span className="admin-small admin-muted">Pantallas pendientes</span></section>
+      <section className="admin-card admin-context">
+        <span className="admin-icon-tile"><Users size={24} aria-hidden="true" /></span>
+        <h2>Conductores</h2>
+        <p className="admin-muted">Datos y credenciales de los conductores de la empresa.</p>
+        <Link className="admin-back-link" to={rutaConductores}>Ver conductores<ArrowRight size={18} aria-hidden="true" /></Link>
+      </section>
     </div>
     <PendingNotice />
   </>;

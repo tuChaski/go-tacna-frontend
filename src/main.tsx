@@ -5,7 +5,7 @@ import App from './App.tsx'
 
 const rootElement = document.getElementById('root')!
 const isAdminPreview = import.meta.env.DEV && /^\/admin\/preview(?:\/|$)/.test(window.location.pathname)
-const AdminPreview = import.meta.env.DEV ? lazy(() => import('./features/admin/AdminPreview')) : null
+const AdminPreview = import.meta.env.DEV ? lazy(() => import('./modulos/administracion/AdminPreview')) : null
 
 if (isAdminPreview) rootElement.classList.add('admin-preview-root')
 

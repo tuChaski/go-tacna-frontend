@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Pencil, Plus, Search, SlidersHorizontal, Trash2 } from 'lucide-react';
-import { PageHeading } from '../components/PageHeading';
-import { PendingNotice } from '../components/PendingNotice';
+import { PageHeading } from '../componentes/PageHeading';
+import { PendingNotice } from '../componentes/PendingNotice';
 import { RouteActionDialog } from './RouteActionDialog';
 import { referenceRoute, routesPreviewPath } from './route-reference';
 

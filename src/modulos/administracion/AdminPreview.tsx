@@ -1,18 +1,23 @@
+/** Monta la navegación de revisión de T059; el acceso autenticado sigue pendiente. */
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
-import { Building2, House, Route as RouteIcon } from 'lucide-react';
-import busFront from './assets/bus-front.svg';
-import eye from './assets/eye.svg';
+import { Building2, House, Route as RouteIcon, Users } from 'lucide-react';
+import busFront from './recursos/bus-front.svg';
+import eye from './recursos/eye.svg';
 import { validateCompanyForm } from './company-form';
 import type { CompanyFormErrors, CompanyFormValues } from './company-form';
-import { PageHeading } from './components/PageHeading';
-import { PendingNotice } from './components/PendingNotice';
+import { PageHeading } from './componentes/PageHeading';
+import { PendingNotice } from './componentes/PendingNotice';
 import { CompanyHome } from './CompanyHome';
-import { RouteList } from './routes/RouteList';
-import { RouteForm } from './routes/RouteForm';
-import { RouteDetail } from './routes/RouteDetail';
-import { companyPreviewPath, referenceRoute, routesPreviewPath } from './routes/route-reference';
+import { RouteList } from './rutas/RouteList';
+import { RouteForm } from './rutas/RouteForm';
+import { RouteDetail } from './rutas/RouteDetail';
+import { companyPreviewPath, referenceRoute, routesPreviewPath } from './rutas/route-reference';
+import { ListadoConductores } from './conductores/ListadoConductores';
+import { FormularioConductor } from './conductores/FormularioConductor';
+import { DetalleConductor } from './conductores/DetalleConductor';
+import { conductorReferencia, rutaConductores } from './conductores/conductor-referencia';
 import '@fontsource-variable/inter';
 import './admin.css';
 
@@ -202,6 +207,7 @@ function PreviewLayout() {
         {companyView ? <nav aria-label="Administración de empresa">
           <NavLink to={companyPreviewPath} end><House size={20} aria-hidden="true" />Inicio</NavLink>
           <NavLink to={routesPreviewPath}><RouteIcon size={20} aria-hidden="true" />Rutas</NavLink>
+          <NavLink to={rutaConductores}><Users size={20} aria-hidden="true" />Conductores</NavLink>
         </nav> : <nav aria-label="Administración general">
           <NavLink to={base} end><img src={busFront} width="20" height="20" alt="" />Inicio</NavLink>
           <NavLink to={`${base}/empresas`}><img src={busFront} width="20" height="20" alt="" />Empresas</NavLink>
@@ -212,6 +218,10 @@ function PreviewLayout() {
       <main className="admin-main" id="admin-content">
         <div className="admin-session"><span>{companyView ? 'Empresa: Andino Demo / Tacna' : 'Go Tacna / Empresas registradas'}</span><span>{companyView ? 'Lucía · Administrador de empresa · Referencia' : 'María · Administrador general · Referencia'}</span></div>
         <Routes location={location}>
+          <Route path={rutaConductores} element={<ListadoConductores />} />
+          <Route path={`${rutaConductores}/nuevo`} element={<FormularioConductor key="nuevo-conductor" />} />
+          <Route path={`${rutaConductores}/${conductorReferencia.id}`} element={<DetalleConductor />} />
+          <Route path={`${rutaConductores}/${conductorReferencia.id}/editar`} element={<FormularioConductor key="editar-conductor" editando />} />
           <Route path={companyPreviewPath} element={<CompanyHome />} />
           <Route path={routesPreviewPath} element={<RouteList />} />
           <Route path={`${routesPreviewPath}/nueva`} element={<RouteForm key="create-route" />} />
