@@ -1,0 +1,79 @@
+/* Estilos exclusivos del acceso. El contenedor ocupa la ventana sin heredar
+   el ancho, la tipografía ni los colores oscuros del ejemplo inicial de Vite. */
+#root.acceso-root { width: 100%; max-width: none; border: 0; text-align: left; }
+.acceso { --acceso-azul: #2563eb; --acceso-texto: #0f172a; --acceso-suave: #64748b;
+  display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); min-height: 100svh;
+  font: 400 16px/1.5 'Inter Variable', Inter, sans-serif; color: var(--acceso-texto); background: #f8fafc;
+  color-scheme: light; letter-spacing: normal; }
+.acceso *, .acceso *::before, .acceso *::after { box-sizing: border-box; }
+.acceso a { text-decoration: none; }
+.acceso button, .acceso input { font: inherit; }
+.acceso button { cursor: pointer; }
+.acceso :is(a, button, input):focus-visible { outline: 3px solid #60a5fa; outline-offset: 3px; }
+
+/* Presentación con profundidad de color y módulos de texto; sin imágenes remotas. */
+.acceso-presentacion { padding: clamp(32px, 4.4vw, 72px); display: flex; flex-direction: column; gap: 56px;
+  color: #fff; background: radial-gradient(ellipse at 0% 100%, #2563eb 0%, transparent 65%), #102c65; }
+.acceso-marca { display: inline-flex; align-items: center; gap: 12px; width: fit-content; color: #fff; font-size: 25px; font-weight: 700; }
+.acceso-marca-icono { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px;
+  background: #ffffff18; border: 1px solid #ffffff30; border-radius: 14px; }
+.acceso-propuesta { margin: auto 0; padding: 24px 0; }
+.acceso-etiqueta { display: inline-block; border: 1px solid #ffffff40; background: #ffffff0d; border-radius: 30px;
+  padding: 6px 13px; color: #dbeafe; font-size: 13px; font-weight: 500; }
+.acceso .acceso-propuesta h2 { color: #fff; font: 700 clamp(36px, 4.2vw, 60px)/1.12 'Inter Variable', sans-serif;
+  letter-spacing: -1.8px; margin: 24px 0; }
+.acceso-propuesta > p { max-width: 410px; color: #dbeafe; font-size: 18px; line-height: 1.65; margin: 0; }
+.acceso-capacidades { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
+.acceso-capacidades span { display: inline-flex; align-items: center; gap: 8px; padding: 12px;
+  background: #ffffff0d; border: 1px solid #ffffff26; border-radius: 12px; font-size: 13px; }
+.acceso-privacidad { display: flex; align-items: center; gap: 12px; color: #dbeafe; max-width: 390px; margin: 0; font-size: 14px; }
+.acceso-privacidad svg { flex-shrink: 0; }
+
+/* El formulario tiene ancho máximo legible y controles de al menos 48 px. */
+.acceso-contenido { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px clamp(24px, 5vw, 80px); gap: 24px; min-width: 0; }
+.acceso-volver { display: inline-flex; gap: 8px; align-items: center; align-self: flex-start; color: #475569; font-size: 14px; }
+.acceso-tarjeta { width: 100%; max-width: 480px; padding: 36px; background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 24px; box-shadow: 0 14px 45px #0f172a06; }
+.acceso-simbolo { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+  background: #eff6ff; border: 1px solid #dbeafe; border-radius: 16px; color: var(--acceso-azul); margin-bottom: 24px; }
+.acceso-sobretitulo { color: var(--acceso-azul); font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+.acceso h1 { color: var(--acceso-texto); font: 700 30px/1.2 'Inter Variable', sans-serif; letter-spacing: -0.7px; margin: 0 0 12px; }
+.acceso header > p:last-child { color: var(--acceso-suave); margin: 0; font-size: 15px; }
+.acceso form { display: grid; gap: 22px; margin-top: 30px; }
+.acceso-campo { display: grid; gap: 8px; min-width: 0; }
+.acceso label { font-size: 14px; font-weight: 600; }
+.acceso input { width: 100%; min-width: 0; height: 50px; border: 1px solid #cbd5e1; border-radius: 10px;
+  padding: 12px 14px; background: #fff; color: var(--acceso-texto); }
+.acceso input::placeholder { color: #64748b; opacity: 1; }
+.acceso input[aria-invalid=true] { border-color: #dc2626; }
+.acceso-clave { position: relative; }
+.acceso-clave input { padding-right: 54px; }
+.acceso-mostrar { position: absolute; right: 4px; top: 3px; width: 44px; height: 44px; display: flex; align-items: center;
+  justify-content: center; border: 0; background: transparent; color: #475569; border-radius: 8px; }
+.acceso-mostrar:hover { background: #f1f5f9; }
+.acceso-ayuda, .acceso-error { font-size: 12px; margin: 0; line-height: 1.5; }
+.acceso-ayuda { color: var(--acceso-suave); }
+.acceso-error { color: #b91c1c; }
+.acceso-ingresar { display: inline-flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 50px;
+  border: 1px solid var(--acceso-azul); background: var(--acceso-azul); color: white; border-radius: 10px; font-weight: 600; padding: 12px; }
+.acceso-ingresar:hover { background: #1d4ed8; }
+.acceso-aviso { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px; margin: 0; color: #1e40af; font-size: 13px; }
+.acceso-soporte { color: var(--acceso-suave); font-size: 12px; margin: 24px 0 0; border-top: 1px solid #e2e8f0; padding-top: 22px; }
+.acceso-pie { font-size: 12px; color: var(--acceso-suave); margin: 0; }
+
+/* En pantallas pequeñas, la presentación se vuelve una cabecera y el formulario
+   ocupa el ancho disponible; se conserva el tamaño de letra de los controles. */
+@media (max-width: 850px) {
+  .acceso { grid-template-columns: minmax(0, 1fr); }
+  .acceso-presentacion { padding: 28px 24px; gap: 24px; }
+  .acceso-propuesta { margin: 0; padding: 0; }
+  .acceso .acceso-propuesta h2 { font-size: 34px; letter-spacing: -1px; margin: 16px 0; }
+  .acceso-propuesta h2 br { display: none; }
+  .acceso-propuesta > p { max-width: none; font-size: 15px; }
+  .acceso-capacidades { display: none; }
+  .acceso-privacidad { max-width: none; font-size: 12px; }
+  .acceso-contenido { padding: 24px 16px 32px; gap: 20px; }
+  .acceso-volver { margin-left: 8px; }
+  .acceso-tarjeta { padding: 28px 24px; border-radius: 18px; }
+}
