@@ -2,6 +2,8 @@
 
 Rama: `feature/T059-crud-admin`, creada desde `origin/develop`.
 
+Revisión más reciente: [matriz de casos y pendientes de cierre — 16/10/2026](./revision-t059.md). Incluye novedades de backend posteriores a las referencias históricas de este documento.
+
 ## Revisar las pantallas
 
 Desde la raíz del frontend:

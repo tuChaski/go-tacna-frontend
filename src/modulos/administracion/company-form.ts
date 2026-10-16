@@ -16,6 +16,11 @@ export function validateCompanyForm(values: CompanyFormValues, creating: boolean
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
     errors.email = 'Ingresa un correo electrónico válido.';
   }
+  // En edición, vacío conserva la contraseña; espacios son un intento inválido
+  // de cambiarla. No se recorta una contraseña válida porque altera su contenido.
   if (creating && !values.password.trim()) errors.password = 'Ingresa una contraseña inicial.';
+  else if (values.password.length > 0 && !values.password.trim()) {
+    errors.password = 'La contraseña no puede contener solo espacios.';
+  }
   return errors;
 }
