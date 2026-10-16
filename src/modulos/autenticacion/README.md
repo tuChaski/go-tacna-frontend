@@ -22,12 +22,30 @@ El correo y la contraseña comienzan vacíos. No se guardan ni se imprimen crede
 
 ## Contrato e integración pendiente
 
-Se revisaron las rutas de autenticación y la migración de usuarios de backend/main en `6cbe163`. El servidor usa `role: admin` sin distinguir aún administrador general y de empresa. Los servicios del frontend también tienen diferencias de nombres y estructura respecto a la respuesta del servidor. Se acordó terminar primero la interfaz; no se inventaron roles, empresa, endpoints ni adaptadores.
+Se revisaron las rutas de autenticación y la migración de usuarios de backend/main en `6cbe163`. El servidor usa `role: admin` sin distinguir aún administrador general y de empresa. Se acordó terminar primero la interfaz. Posteriormente se preparó un adaptador para los nombres y envoltorios ya confirmados por el controlador, manteniendo la pantalla sin solicitudes hasta acordar los perfiles administrativos.
+
+### Preparado para integrar en develop
+
+`src/services/adaptador-autenticacion.ts` concentra el contrato confirmado. `authService.ts` usa ese adaptador para login, registro y perfil. Se mantienen sus firmas locales para el proveedor existente; los errores HTTP siguen propagándose al consumidor.
+
+| Operación | Datos locales | Contrato de Laravel |
+|---|---|---|
+| POST `/auth/login` | `email`, `contrasena` | `email`, `password` |
+| POST `/auth/register` | `nombre`, `email`, `contrasena` | `name`, `email`, `password`; registro público de pasajeros |
+| Respuesta login/registro | `{ user, token }` | `{ success: true, data: { user, token, type: 'bearer' } }` |
+| GET `/auth/me` | Usuario local | `{ success: true, data: usuario }` |
+| Usuario | `nombre`, `rol` | `name`, `role`; exige `activo: true` |
+
+El adaptador comprueba la estructura recibida, rechaza tokens vacíos/perfiles inesperados y conserva solo los campos necesarios del usuario. No deduce permisos desde el contenido del JWT. La contraseña mantiene su valor original; el correo se recorta en los extremos al preparar la solicitud. Se revisará este archivo cuando el compañero publique el contrato actualizado; no se agregan roles hipotéticos.
+
+Los nombres de columnas de la BD no tienen que coincidir con los controles visuales. El contrato HTTP decide la adaptación. Por ejemplo, correo/contraseña del login siguen siendo suficientes aunque cambien las tablas administrativas; empresa y permisos deben obtenerse de la sesión del servidor.
+
+Para probar contra servidor se confirmará `VITE_API_BASE_URL` en el entorno local, incluyendo `/api/v1`, y CORS/origen permitido. No se cambió el valor de entorno ni se conectó una BD directamente desde React. La configuración pública puede documentarse; secretos y cuentas reales no deben incluirse en el PR.
 
 Pendientes de T056 o su integración:
 
 1. Confirmar tipos administrativos, empresa asociada y respuestas de login/perfil/logout.
-2. Adaptar los servicios existentes y resolver su integración con el proveedor de sesión, considerando el PR T055 pendiente de integración.
+2. Revisar el adaptador con el contrato definitivo y resolver el montaje/verificación del proveedor de sesión, considerando el PR T055 pendiente de integración.
 3. Conectar autenticación, proteger rutas, restaurar/verificar sesión y definir el cierre real.
 4. Añadir carga, prevención de doble envío y errores de credenciales, cuenta desactivada, conexión y servidor cuando exista una operación real.
 5. Revisar el resto del alcance de T056: el registro público de usuarios es distinto del acceso de administradores.
@@ -44,3 +62,5 @@ No se prueban todavía autorización, persistencia de sesión, cuentas reales ni
 - Inspección visual a 1440 × 1080 y 390 × 844, sin desbordamiento horizontal en móvil. No se observaron errores de consola en el recorrido revisado. No se prueba toda la matriz de navegadores.
 
 Estas comprobaciones no equivalen a pruebas completas de autenticación. No se usaron cuentas reales ni se enviaron credenciales al servidor.
+
+Adaptador: 16 casos locales con datos ficticios comprueban payloads, respuestas de sesión/perfil, los tres roles publicados, estructuras inválidas, token vacío, tipo de token incorrecto, usuario inactivo y selección de campos. Son comprobaciones de transformación, no una prueba HTTP ni una sesión real.
