@@ -1,4 +1,8 @@
-/** Registro y edición de un conductor: estado temporal, validación y accesibilidad. */
+/**
+ * Registro y edición de conductores: conserva una copia temporal de los campos,
+ * muestra errores junto al control correspondiente y facilita corregir con teclado.
+ * No crea cuentas ni persiste credenciales; el guardado espera el contrato de la API.
+ */
 import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
@@ -23,7 +27,8 @@ export function FormularioConductor({ editando = false }: { editando?: boolean }
   const [pendiente, establecerPendiente] = useState(false);
   const formulario = useRef<HTMLFormElement>(null);
 
-  // Al corregir un campo se limpia su error y cualquier aviso anterior de envío.
+  // Revalida únicamente campos que ya mostraron un error para no interrumpir la
+  // primera escritura. Retira el aviso de envío porque los datos han cambiado.
   function cambiarCampo(clave: keyof DatosFormularioConductor, valor: string) {
     const siguientes = { ...datos, [clave]: valor };
     establecerDatos(siguientes);
@@ -33,10 +38,13 @@ export function FormularioConductor({ editando = false }: { editando?: boolean }
     }
   }
 
+  // Al abandonar el control, informa del error sin mover el foco del usuario.
   function revisarCampo(clave: keyof DatosFormularioConductor) {
     establecerErrores(actuales => ({ ...actuales, [clave]: validarConductor(datos, !editando)[clave] }));
   }
 
+  // Centraliza la validación de envío; la contraseña es obligatoria solo al crear.
+  // Un resultado válido prepara la integración, pero no equivale a una cuenta creada.
   function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const siguientesErrores = validarConductor(datos, !editando);

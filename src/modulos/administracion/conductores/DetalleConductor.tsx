@@ -8,6 +8,7 @@ import { ContextoConductor } from './ContextoConductor';
 import { DialogoConductor } from './DialogoConductor';
 import { conductorReferencia, rutaConductores } from './conductor-referencia';
 import { camposDatosConductor } from './formulario-conductor';
+import { microReferencia, rutaMicros } from '../micros/micro-referencia';
 
 export function DetalleConductor() {
   const [accion, establecerAccion] = useState<'estado' | 'eliminar' | null>(null);
@@ -27,8 +28,8 @@ export function DetalleConductor() {
             <div><dt>Empresa</dt><dd>Andino Demo</dd></div>
           </dl>
 
-          {/* La asignación real se consultará al integrar Micros; no se inventa una asociación. */}
-          <p className="admin-pending">La consulta de asignación a un micro está pendiente de integración.</p>
+          {/* Comparte el escenario de T053 con Micros. Es una referencia visual, no una consulta real. */}
+          <p className="admin-pending">Micro asignado en este ejemplo: <Link to={`${rutaMicros}/${microReferencia.id}`}>{microReferencia.codigo}</Link>. La asignación real requiere la API.</p>
           <div className="admin-form-actions admin-conductor-actions">
             <button type="button" className="admin-button admin-outline" onClick={() => establecerAccion('estado')}>Cambiar estado</button>
             <Link className="admin-button" to={`${rutaConductores}/${conductor.id}/editar`}><Pencil size={18} aria-hidden="true" />Editar conductor</Link>

@@ -1,4 +1,4 @@
-# T059 — Avance de interfaz: Empresas, Rutas y Conductores
+# T059 — Avance de interfaz: Empresas, Rutas, Conductores y Micros
 
 Rama: `feature/T059-crud-admin`, creada desde `origin/develop`.
 
@@ -16,6 +16,7 @@ Abrir `http://localhost:5173/admin/preview` (o el puerto que indique Vite).
 Para el administrador de empresa: `http://localhost:5173/admin/preview/empresa`.
 Para Rutas: `http://localhost:5173/admin/preview/empresa/rutas`.
 Para Conductores: `http://localhost:5173/admin/preview/empresa/conductores`.
+Para Micros: `http://localhost:5173/admin/preview/empresa/micros`.
 El enlace superior permite cambiar de perfil para revisar las pantallas; no cambia una sesión autenticada.
 
 La vista previa se carga exclusivamente en desarrollo mediante `import.meta.env.DEV`. En la compilación de producción continúa la aplicación existente; esta vista no constituye un panel autenticado ni un mecanismo de autorización.
@@ -90,11 +91,10 @@ El nombre completo, documento, correo y contraseña inicial proceden del prototi
 
 ## Pendiente para completar T059
 
-- Pantallas del administrador de empresa: Micros.
 - Integración con T029, T030 y T031, y definición del contrato real.
 - Datos de la sesión autenticada, roles y aislamiento por empresa comprobados por el servidor.
 - Listados reales y estados de carga, vacíos y errores del servicio.
-- Guardado, edición, desactivación, reactivación y eliminación definitiva de rutas y conductores con persistencia real.
+- Guardado, edición, desactivación, reactivación y eliminación definitiva de rutas, conductores y micros con persistencia real.
 - Unicidad, políticas de contraseñas y formatos oficiales de documentos acordados con la API.
 - Asignación conductor–micro, bloqueos por dependencias y comprobación de persistencia al recargar.
 
@@ -134,3 +134,37 @@ La reactivación y las restricciones de eliminación sobre cuentas, asignaciones
 - [T053 · Página administrativa en Figma](https://www.figma.com/design/Lw9Pbwc65lMKyjsW5IWZaD/go-tacna?node-id=73-1150).
 - [T053 · Documentación en revisión](https://github.com/tuChaski/go-tacna-docs/pull/12).
 - [T055 · PR pendiente](https://github.com/tuChaski/go-tacna-frontend/pull/117).
+
+## Micros y comentarios de implementación — 15/10/2026
+
+Se añade `micros/` dentro de `src/modulos/administracion/`, con responsabilidades separadas y nombres en español:
+
+- `ListadoMicros.tsx`: búsqueda por código, placa, ruta o conductor; filtro de estado y acciones.
+- `FormularioMicro.tsx`: copia temporal de registro/edición, errores por campo y enfoque del primer error.
+- `formulario-micro.ts`: tipos locales y validaciones de presencia, empresa, disponibilidad y recorrido.
+- `micro-referencia.ts`: ejemplo inmutable y catálogos ficticios relacionados con Rutas y Conductores.
+- `ContextoMicro.tsx`: resumen de las selecciones y explicación de la asignación.
+- `DetalleMicro.tsx`: datos del micro y enlaces a su ruta y conductor.
+- `DialogoMicro.tsx`: confirmación separada de desactivación y eliminación definitiva, con manejo de foco.
+
+Código, placa y ruta activa son obligatorios; conductor es opcional. Un conductor ocupado en otro micro no puede seleccionarse; al editar puede conservarse el actual. El modelo contempla bloquear cambios de ruta/conductor durante un recorrido. La referencia no está en recorrido: ese bloqueo se comprueba por separado en el validador, no con datos operativos reales.
+
+Los comentarios explican el propósito de cada archivo, el estado temporal, el motivo de las restricciones, la validación al enviar y la accesibilidad de las confirmaciones. Se amplían también los comentarios del formulario de Conductores. Las comprobaciones locales no sustituyen permisos ni validaciones atómicas del servidor.
+
+### Novedades consultadas en GitHub
+
+La referencia de OpenAPI vacía descrita arriba corresponde a la revisión anterior. En [docs/main, commit a77e4b5](https://github.com/tuChaski/go-tacna-docs/tree/a77e4b5c63d6deb3cb41dbadf8a794339704103d) ya se integraron el contrato de GPS/WebSocket (PR #11), el kit UI (PR #14) y la navegación en tres toques (PR #10). OpenAPI ahora incluye `/tracking/position` y `/tracking/stop`; todavía no define el CRUD administrativo. El modelo de micro para seguimiento no se utiliza como contrato de registro administrativo.
+
+Las ramas revisadas de backend conservan sus referencias: `main` en `24d437d`, `develop` en `20a921f`, `feature/T035-init-realtime-server` en `dd70932` y `feature/T036-configurar-websocket` en `cf0e647`. El [PR #3 de WebSocket](https://github.com/tuChaski/go-tacna-backend/pull/3) sigue abierto. No se encontraron nuevas ramas del CRUD entre las publicadas. La guía de frontend y el ERD conceptual no cambiaron en esta revisión.
+
+Antes de integrar Micros deben confirmarse los campos y endpoints, unicidad de placa/código, catálogo por empresa, asignación uno a uno, estado de recorrido y restricciones de desactivación/eliminación. Registrar un micro no inicia un recorrido ni activa el GPS.
+
+### Verificación de Micros
+
+- Compilación y lint del módulo: pasan. Continúan la advertencia de tamaño de la landing y el error previo del lint global en `AuthContext.tsx:68`.
+- 12 escenarios del validador: campos obligatorios, conductor opcional, conductor disponible/ocupado/inactivo/de otra empresa/inexistente, ruta inactiva/de otra empresa, conservación del conductor actual y restricciones durante recorrido.
+- Navegador: búsqueda sin coincidencias y por apellido sin tilde; formulario vacío con tres errores y foco en código; conductor ocupado deshabilitado; envío válido sin conductor con aviso de API pendiente; edición precargada y conductor actual habilitado.
+- Eliminación: foco inicial en Cancelar, confirmación sin borrar el ejemplo y Escape con devolución del foco al botón de origen.
+- Formulario móvil a 390 px: sin desbordamiento horizontal.
+
+Estas verificaciones son de interfaz y reglas locales; no prueban persistencia, autorización, GPS ni integración con el backend. T059 sigue pendiente de integración.

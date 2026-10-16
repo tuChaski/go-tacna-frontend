@@ -45,6 +45,13 @@
 /* Los documentos y correos largos deben adaptarse a las fichas en móvil. */
 .admin-record-key { overflow-wrap: anywhere; }
 .admin-conductor-actions { margin-top: 24px; }
+/* Resumen de asignaciones: separa etiqueta y valor, permitiendo textos largos en móvil. */
+.admin-assignment-summary { margin: 0; width: 100%; }
+.admin-assignment-summary dt { color: var(--admin-muted); font-size: 12px; }
+.admin-assignment-summary dd { margin: 4px 0 16px; overflow-wrap: anywhere; }
+.admin-field select { width: 100%; min-width: 0; }
+.admin-field select[aria-invalid="true"] { border-color: #dc2626; }
+.admin-field select:disabled { background: #f1f5f9; cursor: not-allowed; }
 .admin-row-actions { display: flex; gap: 8px; }
 .admin-row-actions .admin-button { width: 125px; flex: 0 0 125px; }
 .admin-small { font-size: 14px; line-height: 20px; }

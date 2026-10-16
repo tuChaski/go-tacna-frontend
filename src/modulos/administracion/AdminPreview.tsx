@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
-import { Building2, House, Route as RouteIcon, Users } from 'lucide-react';
+import { Building2, BusFront, House, Route as RouteIcon, Users } from 'lucide-react';
 import busFront from './recursos/bus-front.svg';
 import eye from './recursos/eye.svg';
 import { validateCompanyForm } from './company-form';
@@ -18,6 +18,10 @@ import { ListadoConductores } from './conductores/ListadoConductores';
 import { FormularioConductor } from './conductores/FormularioConductor';
 import { DetalleConductor } from './conductores/DetalleConductor';
 import { conductorReferencia, rutaConductores } from './conductores/conductor-referencia';
+import { ListadoMicros } from './micros/ListadoMicros';
+import { FormularioMicro } from './micros/FormularioMicro';
+import { DetalleMicro } from './micros/DetalleMicro';
+import { microReferencia, rutaMicros } from './micros/micro-referencia';
 import '@fontsource-variable/inter';
 import './admin.css';
 
@@ -207,6 +211,7 @@ function PreviewLayout() {
         {companyView ? <nav aria-label="Administración de empresa">
           <NavLink to={companyPreviewPath} end><House size={20} aria-hidden="true" />Inicio</NavLink>
           <NavLink to={routesPreviewPath}><RouteIcon size={20} aria-hidden="true" />Rutas</NavLink>
+          <NavLink to={rutaMicros}><BusFront size={20} aria-hidden="true" />Micros</NavLink>
           <NavLink to={rutaConductores}><Users size={20} aria-hidden="true" />Conductores</NavLink>
         </nav> : <nav aria-label="Administración general">
           <NavLink to={base} end><img src={busFront} width="20" height="20" alt="" />Inicio</NavLink>
@@ -218,6 +223,11 @@ function PreviewLayout() {
       <main className="admin-main" id="admin-content">
         <div className="admin-session"><span>{companyView ? 'Empresa: Andino Demo / Tacna' : 'Go Tacna / Empresas registradas'}</span><span>{companyView ? 'Lucía · Administrador de empresa · Referencia' : 'María · Administrador general · Referencia'}</span></div>
         <Routes location={location}>
+          {/* Las rutas exactas solo resuelven ejemplos conocidos; un ID desconocido cae en la pantalla no disponible. */}
+          <Route path={rutaMicros} element={<ListadoMicros />} />
+          <Route path={`${rutaMicros}/nuevo`} element={<FormularioMicro key="nuevo-micro" />} />
+          <Route path={`${rutaMicros}/${microReferencia.id}`} element={<DetalleMicro />} />
+          <Route path={`${rutaMicros}/${microReferencia.id}/editar`} element={<FormularioMicro key="editar-micro" editando />} />
           <Route path={rutaConductores} element={<ListadoConductores />} />
           <Route path={`${rutaConductores}/nuevo`} element={<FormularioConductor key="nuevo-conductor" />} />
           <Route path={`${rutaConductores}/${conductorReferencia.id}`} element={<DetalleConductor />} />
