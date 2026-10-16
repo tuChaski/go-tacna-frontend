@@ -50,7 +50,7 @@ En edición, la contraseña comienza vacía y se presenta como cambio opcional; 
 
 «Eliminar» representa **borrado definitivo**, separado de «Desactivar», que conserva información. El diálogo identifica la ruta, explica la consecuencia y permite cancelar con botón o Escape. El foco inicial está en Cancelar y se devuelve al botón de origen al cerrar.
 
-En esta fase, confirmar solo muestra que falta la API y no elimina el ejemplo. El backend deberá definir las restricciones por micros asociados, permisos y demás dependencias antes de habilitar la operación real. La opción se añadió a Rutas; no se amplió la eliminación de Empresas en este incremento.
+En esta fase, confirmar solo muestra que falta la API y no elimina el ejemplo. El backend deberá definir las restricciones por micros asociados, permisos y demás dependencias antes de habilitar la operación real. En el avance inicial se añadió a Rutas; el 16/10 se amplió a Empresas con autorización de Alex.
 
 ## Organización para revisión del código
 
@@ -131,6 +131,17 @@ Estas comprobaciones son de interfaz; no prueban la API, la base de datos ni la 
 La reactivación y las restricciones de eliminación sobre cuentas, asignaciones e historial requieren datos y reglas del backend. No se declaran verificadas en esta vista previa.
 
 ## Referencias
+
+## Eliminación de Empresas — 16/10/2026
+
+- `empresas/DialogoEliminarEmpresa.tsx`: confirmación reutilizada por listado y detalle, con nombre y RUC recibidos como propiedades. Los comentarios explican el propósito, el ciclo de foco y el límite de integración.
+- Eliminar es definitivo y está separado de Desactivar. Las consecuencias sobre cuentas, rutas, micros y conductores se acordarán con backend; no se presupone eliminación en cascada.
+- Confirmar muestra que falta la API. No se elimina el ejemplo ni se alteran relaciones; cerrar desmonta el diálogo y una nueva apertura limpia el aviso.
+- Verificado en navegador: apertura desde listado y detalle, foco inicial en Cancelar, confirmación con aviso pendiente, Escape y Cancelar con devolución del foco, nueva apertura sin aviso previo y cambio de estado separado.
+- Revisión móvil a 390 × 844 sin desbordamiento horizontal y captura de escritorio a 1440 × 1080. Build y lint del módulo pasan; permanece la advertencia existente de tamaño del bundle.
+- La eliminación real, los permisos y las restricciones por dependencias siguen pendientes. T059 no se declara completada.
+
+## Referencias del proyecto
 
 - [T059 · Issue #95](https://github.com/tuChaski/go-tacna-frontend/issues/95).
 - [T053 · Página administrativa en Figma](https://www.figma.com/design/Lw9Pbwc65lMKyjsW5IWZaD/go-tacna?node-id=73-1150).

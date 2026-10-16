@@ -10,6 +10,7 @@ import type { CompanyFormErrors, CompanyFormValues } from './company-form';
 import { PageHeading } from './componentes/PageHeading';
 import { PendingNotice } from './componentes/PendingNotice';
 import { CompanyHome } from './CompanyHome';
+import { DialogoEliminarEmpresa } from './empresas/DialogoEliminarEmpresa';
 import { RouteList } from './rutas/RouteList';
 import { RouteForm } from './rutas/RouteForm';
 import { RouteDetail } from './rutas/RouteDetail';
@@ -80,6 +81,8 @@ function StateDialog({ onClose }: { onClose: () => void }) {
 
 function CompanyList() {
   const [stateOpen, setStateOpen] = useState(false);
+  // La confirmación se desmonta al cerrar: cada apertura empieza sin avisos previos.
+  const [eliminacionAbierta, establecerEliminacionAbierta] = useState(false);
   return <>
     <PageHeading title="Empresas" description="Registra empresas y entrega el acceso a sus administradores." />
     <Link className="admin-button admin-create" to={`${base}/empresas/nueva`}>Registrar empresa</Link>
@@ -93,6 +96,7 @@ function CompanyList() {
             <Link className="admin-button admin-outline" to={`${base}/empresas/${referenceCompany.id}`}>Ver</Link>
             <Link className="admin-button admin-outline" to={`${base}/empresas/${referenceCompany.id}/editar`}>Editar</Link>
             <button type="button" className="admin-button admin-outline" onClick={() => setStateOpen(true)}>Estado</button>
+            <button type="button" className="admin-button admin-delete-outline" onClick={() => establecerEliminacionAbierta(true)}>Eliminar</button>
           </div></td>
         </tr></tbody>
       </table>
@@ -100,11 +104,13 @@ function CompanyList() {
     <p className="admin-small admin-muted">1 registro de referencia</p>
     <PendingNotice />
     {stateOpen && <StateDialog onClose={() => setStateOpen(false)} />}
+    {eliminacionAbierta && <DialogoEliminarEmpresa nombre={referenceCompany.name} ruc={referenceCompany.ruc} alCerrar={() => establecerEliminacionAbierta(false)} />}
   </>;
 }
 
 function CompanyDetail() {
   const [stateOpen, setStateOpen] = useState(false);
+  const [eliminacionAbierta, establecerEliminacionAbierta] = useState(false);
   return <>
     <PageHeading title="Detalle de empresa" description="Consulta los datos y el estado del registro seleccionado." />
     <div className="admin-columns">
@@ -118,6 +124,9 @@ function CompanyDetail() {
           <Link className="admin-button admin-outline" to={`${base}/empresas`}>Volver</Link>
           <Link className="admin-button" to={`${base}/empresas/${referenceCompany.id}/editar`}>Editar</Link>
         </div>
+        {/* El borrado tiene su propia confirmación; no se confunde con cambiar el estado. */}
+        <p className="admin-small admin-muted">Eliminar borra definitivamente; desactivar conserva la información.</p>
+        <button type="button" className="admin-button admin-delete-outline" onClick={() => establecerEliminacionAbierta(true)}>Eliminar empresa</button>
       </section>
       <CompanyContext>
         <p>Activo</p>
@@ -126,6 +135,7 @@ function CompanyDetail() {
     </div>
     <PendingNotice />
     {stateOpen && <StateDialog onClose={() => setStateOpen(false)} />}
+    {eliminacionAbierta && <DialogoEliminarEmpresa nombre={referenceCompany.name} ruc={referenceCompany.ruc} alCerrar={() => establecerEliminacionAbierta(false)} />}
   </>;
 }
 

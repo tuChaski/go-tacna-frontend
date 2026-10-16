@@ -29,7 +29,7 @@ Estados: **Verificado previo** corresponde a las comprobaciones del 14–15/10 r
 | Conservar conductor del micro editado | Permitir | Verificado previo |
 | Cambiar asociaciones durante recorrido | Rechazar | Verificado previo solo en validador; interfaz con datos operativos pendiente |
 | Eliminar / desactivar | Confirmaciones distintas, Cancelar, Escape, foco y aviso pendiente | Verificado previo: Rutas, Conductores y Micros |
-| Eliminación de Empresas | Acordar alcance y consecuencias antes de implementarla | Pendiente; la interfaz solo ofrece cambio de estado |
+| Eliminación de Empresas | Confirmación definitiva separada de desactivar | Verificado hoy tras autorización de Alex: listado/detalle, Cancelar/Escape, foco, aviso pendiente y nueva apertura; operación real y consecuencias pendientes |
 | Reactivación | Disponible para un registro inactivo | Pendiente: ejemplos activos no cubren el flujo |
 | Pantallas pequeñas y escritorio | Controles legibles sin desbordamiento horizontal | Verificado previo; no cubre todos los dispositivos |
 | ID inexistente | Pantalla no disponible en la vista previa | Verificado hoy por lectura del enrutador; respuesta 404 de API pendiente |
@@ -43,7 +43,7 @@ Estados: **Verificado previo** corresponde a las comprobaciones del 14–15/10 r
 
 ## Novedades de backend
 
-Comprobaciones técnicas de esta revisión: `npm run build` pasa con la advertencia existente de tamaño del bundle de la landing; ESLint local sobre `src/main.tsx` y `src/modulos/administracion` pasa; cuatro aserciones del validador de contraseña de empresa pasan; `git diff --check` no encuentra errores de espacios. No se repitió la revisión visual en navegador hoy ni se ejecutaron pruebas de integración con servidor.
+Comprobaciones técnicas de esta revisión: `npm run build` pasa con la advertencia existente de tamaño del bundle de la landing; ESLint local sobre `src/main.tsx` y `src/modulos/administracion` pasa; cuatro aserciones del validador de contraseña de empresa pasan; `git diff --check` no encuentra errores de espacios. La revisión inicial fue de código; posteriormente se verificó en navegador la nueva confirmación de eliminación de Empresas. No se ejecutaron pruebas de integración con servidor.
 
 El [commit 6cbe163](https://github.com/tuChaski/go-tacna-backend/commit/6cbe163f9096f43c64aa6747742bca4d7c87091b), ahora en `main`, incorpora autenticación JWT, modelos y migraciones para empresas, rutas, paraderos, micros, conductores y posiciones. Esto reemplaza el estado histórico descrito en el README del 15/10. `develop` permanece en `20a921f` y las dos ramas publicadas de tiempo real no cambiaron.
 
@@ -60,7 +60,7 @@ No se eliminaron campos ni se inventaron adaptadores para resolver estas diferen
 
 ## Pasos para cerrar la tarea
 
-1. Revisar el avance visual con Alex y resolver pendientes de interfaz, incluido el alcance de eliminación de Empresas.
+1. Revisar el avance visual con Alex y resolver pendientes de interfaz. Eliminación de Empresas autorizada e interfaz añadida el 16/10; efectos sobre relaciones aún pendientes del backend.
 2. Confirmar endpoints, campos, permisos, reglas de asignación y borrado con backend.
 3. Conectar el panel autenticado y sustituir referencias por servicios reales.
 4. Ejecutar los casos pendientes de la matriz, guardar resultados y corregir fallos.
