@@ -228,7 +228,8 @@ function PreviewLayout() {
           <NavLink to={`${base}/empresas`}><img src={busFront} width="20" height="20" alt="" />Empresas</NavLink>
         </nav>}
         {companyView && <div className="admin-sidebar-company"><Building2 size={20} aria-hidden="true" /><div><strong>Andino Demo</strong><span>Administrador de empresa</span></div></div>}
-        <a className="admin-button admin-outline admin-exit" href="/">Salir de la vista</a>
+        {/* Solo abandona la vista previa; el cierre de sesión real espera integración. */}
+        <a className="admin-button admin-outline admin-exit" href="/login">Salir de la vista</a>
       </aside>
       <main className="admin-main" id="admin-content">
         <div className="admin-session"><span>{companyView ? 'Empresa: Andino Demo / Tacna' : 'Go Tacna / Empresas registradas'}</span><span>{companyView ? 'Lucía · Administrador de empresa · Referencia' : 'María · Administrador general · Referencia'}</span></div>
