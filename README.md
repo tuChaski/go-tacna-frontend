@@ -1,75 +1,99 @@
-# React + TypeScript + Vite
+# Go Tacna — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web de Go Tacna para el curso Ingeniería Web, construida con React, TypeScript, Vite y Tailwind CSS.
 
-Currently, two official plugins are available:
+## Ubicación del proyecto
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+La aplicación está en la **raíz de este repositorio**, donde se encuentra `package.json`. Aunque la descripción original de [T055](https://github.com/tuChaski/go-tacna-frontend/issues/28) menciona `web-admin/`, la estructura existente concentra aquí la aplicación; no es necesario crear otra carpeta ni inicializar otro proyecto.
 
-## React Compiler
+## Requisitos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js compatible con las dependencias instaladas. Entorno verificado: **Node.js 24.11.0 y npm 11.6.1**.
+- Git para obtener el repositorio y trabajar en una rama por tarea.
 
-## Expanding the ESLint configuration
+## Instalación y ejecución
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Desde la raíz del repositorio:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Abre la URL que muestre Vite en la terminal, normalmente `http://localhost:5173/`. Si el puerto está ocupado, usa la dirección que indique el servidor. Para detenerlo, presiona `Ctrl+C`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+La vista pública actual muestra el texto «Mapa / Consulta Pública de Rutas (Tacna)». Es una pantalla provisional: todavía no representa un mapa funcional ni el CRUD administrativo de T059.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Comprobaciones
 
+```bash
+npm run build
+npm run lint
 ```
+
+| Comando | Propósito |
+| --- | --- |
+| `npm run dev` | Iniciar el servidor de desarrollo con actualización al editar. |
+| `npm run build` | Comprobar TypeScript y generar la aplicación de producción en `dist/`. |
+| `npm run lint` | Revisar el código con ESLint. |
+| `npm run preview` | Servir localmente el resultado de un build previo. |
+
+Para revisar la compilación en el navegador:
+
+```bash
+npm run build
+npm run preview
+```
+
+Usa la URL que muestre `preview`. Este comando sirve para comprobar el resultado localmente.
+
+### Resultado de la revisión T055 — 13/10/2026
+
+- `npm run dev`: correcto con Vite 8.3.4 en `http://localhost:5173/`.
+- `npm run build`: correcto, código de salida 0, con las dependencias ya instaladas.
+- `npm run lint`: correcto, código de salida 0, sin errores ni advertencias.
+- Tailwind: comprobado visualmente y mediante estilos calculados en `/`: padding de 32 px, fuente de 24 px, peso 700 y altura de línea de 32 px, en un viewport de 526 × 668 px.
+- Comprobación de navegación sin sesión: `/admin/` redirige a `/login`; sin errores ni advertencias observados en consola durante esta revisión.
+
+La revisión inicial detectó un error previo de `react-refresh/only-export-components`: `AuthContext.tsx` exportaba el componente `AuthProvider` y el hook `useAuth`. Con autorización de Alex para incluir la corrección en T055, se separaron el contexto compartido en `src/context/auth-context.ts` y el hook en `src/hooks/useAuth.ts`, y se actualizó su importación en `App.tsx`. El proveedor conserva su lógica existente y ESLint mantiene sus reglas activas.
+
+Estos resultados no certifican una instalación limpia, integración con el backend ni pruebas completas de la aplicación o con usuarios.
+
+## Tailwind CSS
+
+Tailwind CSS 4 está integrado mediante `@tailwindcss/vite` en `vite.config.ts`. La hoja `src/index.css` contiene `@import "tailwindcss";` y se importa desde `src/main.tsx`.
+
+La pantalla pública ya utiliza `p-8 text-2xl font-bold`. Para comprobar la integración, abre `/` y verifica en las herramientas de desarrollo que el texto tenga espaciado interno, tamaño aumentado y negrita. Con una raíz de 16 px, los valores esperados son 32 px de padding, 24 px de fuente y peso 700. Si cambia el tamaño raíz, también cambian los valores en píxeles de las utilidades basadas en `rem`.
+
+## API
+
+El cliente HTTP de `src/services/api.ts` utiliza `VITE_API_BASE_URL`. Si no se define, toma `http://localhost:8001/api/v1`.
+
+Para adaptar la dirección a tu entorno, puedes crear un archivo `.env.local`, ignorado por Git:
+
+```dotenv
+VITE_API_BASE_URL=http://localhost:8001/api/v1
+```
+
+Reinicia Vite después de cambiar esa configuración. Las variables `VITE_*` se incluyen en el cliente: utiliza aquí la URL de la API, nunca contraseñas ni tokens privados. La pantalla provisional y la comprobación visual de Tailwind no requieren iniciar el backend.
+
+## Estructura actual
+
+```text
+public/           Recursos públicos
+src/assets/       Recursos de la aplicación
+src/context/      Contexto de autenticación
+src/hooks/        Hooks compartidos
+src/services/     Cliente HTTP y servicios
+src/types/        Tipos de TypeScript
+src/App.tsx       Rutas y pantallas provisionales
+src/index.css     Importación de Tailwind y estilos globales
+src/main.tsx      Punto de entrada de React
+vite.config.ts    Plugins de React y Tailwind
+```
+
+## Flujo de trabajo
+
+Las tareas de frontend usan una rama por tarea creada desde `develop`, con PR hacia `develop`. Para T055 corresponde `feature/T055-base-web-admin`. Trabaja únicamente en las tareas asignadas y consulta cualquier ampliación de alcance.
+
+T055 verifica la base React + Vite + Tailwind existente. La implementación del CRUD administrativo corresponde a T059. Las comprobaciones de arranque, compilación, lint y estilos no equivalen a pruebas completas de la aplicación ni a pruebas con usuarios.
