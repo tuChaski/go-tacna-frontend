@@ -1,8 +1,127 @@
-# T059 — Avance de interfaz: Empresas, Rutas, Conductores y Micros
+# T059 — Panel administrativo: Empresas, Rutas, Conductores y Micros
 
 Rama: `feature/T059-crud-admin`, creada desde `origin/develop`.
 
-Revisión más reciente: [matriz de casos y pendientes de cierre — 16/10/2026](./revision-t059.md). Incluye novedades de backend posteriores a las referencias históricas de este documento.
+## Estado actual: integración con Laravel — 23/10/2026
+
+El panel después de `/login` consume el gateway y la base de datos reales, con backend/main `b7c5aa2` e infraestructura/develop `193b72d`. Se mantuvo el maquetado `/admin/preview` como referencia de desarrollo. Los apartados de maquetado posteriores son históricos; los avisos de «API pendiente» de esa vista no corresponden al panel autenticado.
+
+### Operaciones conectadas
+
+| Perfil | Recurso y comportamiento |
+|---|---|
+| Administrador general | Empresas: listado, búsqueda, filtros, paginación, registro, detalle, edición, activar/desactivar y eliminación con bloqueo por dependencias. |
+| Administrador general | Cuentas de empresa: creación y edición desde el detalle de la empresa; rol `admin_empresa` fijo, sin selector de privilegios. Se muestran todas las cuentas vinculadas. Contraseña vacía en edición conserva la actual. |
+| Administrador de empresa | Rutas: listado, búsqueda y filtro de activas, registro/edición de nombre y geometría, consulta del recorrido, activar/desactivar y eliminar si no tiene micros. |
+| Administrador de empresa | Conductores: alta de cuenta + perfil mediante `/conductores`, listado, detalle, edición de licencia, cambio de estado operativo y eliminación del perfil si no tiene micro. La cuenta de usuario permanece al borrar el perfil. |
+| Administrador de empresa | Micros: alta, consulta, edición, placa/capacidad, ruta y conductor opcionales, estados y eliminación. Los selectores consultan todas las páginas de su empresa y deshabilitan conductores ocupados o cuentas inactivas para nuevas asignaciones. Un micro en recorrido no permite cambiar sus asignaciones. |
+
+El alcance se obtiene de los perfiles confirmados de sesión. Si hay varias empresas se exige seleccionar una; una sola se selecciona por su ID autorizado. La API vuelve a verificar los permisos y relaciones. El administrador general no recibe en este panel controles para operar rutas/flota de las empresas, según el alcance acordado.
+
+Empresa y cuenta son dos recursos distintos: se guarda primero la empresa y desde su detalle se crea la cuenta. Si falla el segundo paso, la empresa sigue disponible y no se repite su alta. No se anuncia que la cuenta fue creada hasta recibir confirmación del servidor. No se registran contraseñas en consola, archivos ni almacenamiento del navegador.
+
+### Límite de backend confirmado y autorizado por Alex
+
+El administrador de empresa todavía no tiene permisos para editar DNI, nombres, teléfono, correo o contraseña de una cuenta de conductor, ni para activar/desactivar esa cuenta. Alex autorizó conectar lo disponible y dejar esas acciones pendientes de ampliación de API por su compañero. La edición conectada muestra la identidad y permite cambiar la licencia. `disponible`/`en_recorrido`/`sin_conexion` son estados operativos, distintos de `usuario.activo`. Este incremento tampoco implementa desvinculación/eliminación de cuentas administrativas, gestión de pasajeros ni monitoreo T060/refresco T102.
+
+### Organización del código conectado
+
+- `PanelAdministracion.tsx`: navegación autenticada y selección de empresa de sesión.
+- `GestionRecurso.tsx`: listados paginados, consulta de detalle, navegación tras respuestas y alcance de la empresa seleccionada. Cancela consultas al navegar y evita presentar datos de una solicitud anterior.
+- `datos-administracion.ts`: contratos de lectura y etiquetas de los recursos, sin credenciales.
+- `componentes/FormularioRegistro.tsx`: campos publicados para cada operación, validación local, errores por campo, preservación de datos y bloqueo de doble envío; reutiliza `EditorTrazadoRuta`.
+- `componentes/DialogoOperacion.tsx`: confirmación de estado o eliminación, foco accesible y errores de servidor sin cerrar prematuramente.
+- `src/services/administracion.ts`: HTTP, paginación de catálogos, respuestas confirmadas y mensajes controlados para red/401/403/404/409/422/429/500. No reintenta escrituras automáticamente.
+- `RutasAcceso.tsx`: monta el panel después de verificar sesión y rol de T056. El panel y el editor de mapas también se incluyen en producción.
+
+Los formularios conectados comparten componentes para evitar cuatro implementaciones de envío y manejo de errores. Los archivos de referencia existentes permanecen separados de los registros reales; no se usan IDs de ejemplos en peticiones a la API.
+
+### Verificación de integración
+
+- `npm run build` y `npm run lint`: pasan. Se mantiene la advertencia previa del bundle de la landing. `test:auth`: 18 casos; `test:rutas`: ocho casos, todos pasan.
+- API local con PostgreSQL: 36 solicitudes verificadas antes de la limpieza. Alta/edición/consulta de empresa, cuenta administrativa, ruta, conductor y micro; persistencia de la geometría; desactivación/reactivación; duplicados 422; aislamiento 403; asignación uno a uno; borrado bloqueado 409 por dependencias o recorrido; logout y rechazo 401 del token invalidado. La limpieza eliminó solo los IDs ficticios de esa ejecución, en orden inverso de dependencias; no se ejecutaron migraciones ni seeders.
+- Navegador: empresa creada y teléfono editado confirmado al recargar; alta/edición de cuenta administrativa y login con ella; ruta guardada en PostGIS y nombre editado; conductor creado y licencia editada confirmada al recargar; micro con ruta/conductor, capacidad editada y estado cambiado/reactivado, confirmados al recargar.
+- UI: placa duplicada con respuesta 422, datos conservados y foco en placa; conductor ocupado deshabilitado; búsqueda sin coincidencias. Gateway local detenido brevemente: error de consulta con Reintentar; tras restaurarlo, listado recuperado. No se reintentaron escrituras durante esa caída.
+- Permanecen para inspección los registros ficticios identificados como `PRUEBA INTERFAZ T059`, su cuenta administrativa, conductor, ruta y micro `UI-T059-001`. Los de la prueba automática fueron eliminados. No son datos de una empresa real.
+
+La eliminación se verificó contra la API con datos creados por la prueba automática; la revisión de navegador no constituye una batería completa de todas las combinaciones ni pruebas con usuarios. Confirmar T059 con el equipo considerando las operaciones de cuenta de conductor pendientes; no se cierra automáticamente la issue.
+
+Para repetir la prueba de integración en una base local de desarrollo, desde frontend:
+
+```powershell
+$env:GOTACNA_PROBAR_ESCRITURAS = '1'
+$env:GOTACNA_ADMIN_CORREO = '<correo del administrador general local>'
+$env:GOTACNA_ADMIN_CLAVE = '<contraseña local>'
+npm run test:crud
+```
+
+`GOTACNA_API` es opcional y por defecto apunta a `http://127.0.0.1:8001/api/v1`. El script rechaza hosts que no sean loopback. Estas variables son de la prueba Node, no `VITE_*`; no añadir credenciales a `.env` versionados.
+
+## Registro histórico del maquetado
+
+## Actualización de Rutas — 23/10/2026
+
+Se completa el maquetado existente de Rutas con nombre y editor de trazado. Por decisión de Alex se retiran «Origen y destino» y los nombres de referencias inicial/final del formulario, detalle, listado y confirmaciones: no existen en `RutaRequest`/`RutaResource` de backend/main `b7c5aa2`, confirmado nuevamente en GitHub. No se añaden columnas ni endpoints para conservarlos.
+
+- Nombre obligatorio, máximo 180 caracteres, y al menos dos puntos válidos en orden. Se rechazan coordenadas no finitas/fuera de rango y segmentos consecutivos sin desplazamiento. Se permiten recorridos que vuelven al inicio.
+- Modo explícito para marcar puntos en el mapa. También pueden añadirse y corregirse mediante latitud/longitud con teclado, reordenarse, quitarse, limpiarse y recuperarse con Deshacer. Los controles de coordenadas no envían el formulario al pulsar Enter.
+- Mapa de consulta en el detalle y copia de los puntos al editar. El ejemplo tiene cuatro puntos ficticios en Tacna; no representa una línea real verificada.
+- Los puntos describen el recorrido, no paraderos obligatorios. La línea une puntos manuales: no hay ajuste automático a calles, cálculo de rutas, geocodificación ni seguimiento GPS.
+- El guardado sigue pendiente de integración. La empresa se obtendrá del contexto autorizado al construir el payload; el módulo no asigna una empresa real a partir del ejemplo.
+
+### Archivos y dependencias
+
+Los componentes existentes `RouteForm`, `RouteContext`, `RouteDetail`, `RouteList` y sus archivos de referencia se actualizan sin duplicar el módulo. Los nuevos archivos están en `src/modulos/administracion/rutas/`, con nombres en español y comentarios sobre su responsabilidad:
+
+- `MapaRuta.tsx`: presentación del mapa, eventos de selección, encuadre y adaptación al tamaño del contenedor. Incluye aviso y reintento si falla la carga de teselas.
+- `EditorTrazadoRuta.tsx`: copia temporal, historial de cambios y alternativa al ratón para editar puntos.
+- `trazado-ruta.ts`: modelo y validación geométrica; `crearGeoJson` produce `{ type: 'LineString', coordinates: [[longitud, latitud], ...] }` sin alterar los puntos originales. La futura integración lo utilizará como `trazado_ruta`.
+- `pruebas/rutas.test.mjs`: regresiones del contrato y la conversión de coordenadas. Ejecutar `npm run test:rutas`.
+
+Leaflet y React Leaflet ya estaban instalados; se agrega solo `@types/leaflet` como dependencia de desarrollo y su tipo transitivo GeoJSON. Se consultaron la [API de React Leaflet](https://react-leaflet.js.org/docs/api-map/) y la [referencia de Leaflet](https://leafletjs.com/reference.html). El fondo usa teselas visibles bajo demanda de OpenStreetMap con atribución, caché del navegador y sin precarga/offline, siguiendo su [política de teselas](https://operations.osmfoundation.org/policies/tiles/). Requiere conexión a ese proveedor y revisar su capacidad/condiciones al desplegar.
+
+### Verificación de Rutas
+
+- `npm run build` y `npm run lint`: pasan; sigue la advertencia previa del bundle de la landing. `npm run test:rutas`: ocho casos pasan (orden GeoJSON, copia sin mutación, trazado incompleto, límites/no finitos, puntos repetidos, recorrido circular, nombre y longitud máxima).
+- Navegador: formulario vacío y foco en nombre; nombre válido sin trazado y foco en editor; dos puntos marcados sobre el mapa; coordenada fuera de rango rechazada; tercer punto añadido con Enter; reordenamiento, edición, quitar, limpiar y Deshacer; envío válido con aviso explícito de API pendiente.
+- Navegación entre listado, detalle y edición con cuatro puntos precargados; el ejemplo conserva sus datos tras cancelar. Mapas de consulta y edición cargaron el fondo de OpenStreetMap.
+- Revisión a 1440 × 1080 y 390 × 844; sin desbordamiento horizontal en el formulario. Capturas fuera de Git. El aviso de fallo/reintento del proveedor existe, pero no se simuló una caída de sus servidores.
+
+Estas pruebas verifican la interfaz y geometría local; no comprueban persistencia, permisos entre empresas ni todas las condiciones de red. Reactivar, listados paginados y errores de API se completarán en la integración. T059 sigue abierta.
+
+## Actualización de Empresas — 23/10/2026
+
+Se completan los campos de registro, edición y detalle de Empresa y de su cuenta administrativa. Este incremento es maquetado y validación local; no llama a la API ni guarda en la base de datos. Las revisiones anteriores de este documento son históricas.
+
+- Empresa: razón social, RUC, teléfono y dirección.
+- Administrador: DNI, nombres, apellidos, teléfono, correo y contraseña inicial. En edición, contraseña vacía conserva la actual; una contraseña nueva exige al menos ocho caracteres. El detalle nunca muestra contraseñas.
+- Dos grupos accesibles de campos, resumen de identidad y diseño adaptable. Cancelar descarta la copia temporal. Un envío válido informa que la integración sigue pendiente, sin anunciar un guardado.
+- Límites contrastados con `EmpresaRequest` y `UsuarioRequest` de backend/main `b7c5aa2`, también confirmado en GitHub. RUC: exactamente 11 caracteres; DNI: máximo 20; razón social: 180; nombres/apellidos: 120; teléfonos: 30; dirección: 255; correo: 150. El contrato no exige patrones numéricos de RUC/DNI: no se añade verificación tributaria ni de identidad por suposición. La unicidad depende del servidor.
+
+### Organización y comentarios
+
+La [guía de frontend](https://github.com/tuChaski/go-tacna-docs/blob/develop/go-tacna-frontend.md) pide comprobar el árbol existente y separar UI, servicios y dominio. Se conserva `src/modulos/administracion/empresas/`, ya existente:
+
+- `FormularioEmpresa.tsx`: estado temporal, grupos de campos, ayudas, validación y foco. Extrae el formulario de `AdminPreview.tsx`.
+- `formulario-empresa.ts`: modelo local, etiquetas y reglas compartidas. Sustituye `company-form.ts`, ya sin consumidores.
+- `empresa-referencia.ts`: ejemplo ficticio compartido por listado, detalle y edición, sin contraseña almacenada.
+- `AdminPreview.tsx`: mantiene el enrutamiento, listado y detalle; el detalle reutiliza las etiquetas del formulario.
+- `admin.css`: reglas acotadas para los grupos de Empresa y la adaptación de columnas.
+
+Los comentarios explican responsabilidades, límites de la vista previa y tratamiento de contraseñas. La guía conserva referencias antiguas a un contrato vacío; para los campos se usaron las validaciones actuales del backend.
+
+### Verificación de este incremento
+
+- `npm run build` y `npm run lint`: pasan. Se mantiene la advertencia previa de tamaño del bundle de la landing.
+- 26 aserciones locales ejecutadas con Node: presencia y límites de los nueve campos de identidad/contacto, RUC, correo y contraseña en alta/edición. No se añadió una dependencia de pruebas.
+- Navegador: envío vacío con diez errores y foco en razón social; datos ficticios completos con aviso de guardado pendiente; RUC corto, correo inválido y contraseña corta rechazados; cancelación; edición precargada con contraseña vacía admitida; mostrar/ocultar; detalle con todos los campos públicos.
+- Formulario revisado a 1440 × 1080 y 390 × 844; sin desbordamiento horizontal en móvil. Capturas fuera del repositorio. No equivale a probar todos los dispositivos ni a pruebas con usuarios.
+
+### Lo que sigue pendiente
+
+Conectar Empresa, Usuario y su vínculo administrativo como recursos distintos, gestionar fallos parciales y mensajes de servidor, y contemplar cuentas existentes o varios administradores sin inferirlos a partir del único ejemplo visual. Completar búsqueda, filtros, paginación y reactivación de Empresas durante la integración. T059 sigue abierta; los otros módulos y el acceso autenticado al panel no cambian en este incremento.
+
+Revisión histórica: [matriz de casos y pendientes de cierre — 16/10/2026](./revision-t059.md).
 
 ## Revisar las pantallas
 

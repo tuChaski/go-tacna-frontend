@@ -22,7 +22,9 @@ npm run dev
 
 Abre la URL que muestre Vite en la terminal, normalmente `http://localhost:5173/`. Si el puerto está ocupado, usa la dirección que indique el servidor. Para detenerlo, presiona `Ctrl+C`.
 
-La vista pública actual muestra el texto «Mapa / Consulta Pública de Rutas (Tacna)». Es una pantalla provisional: todavía no representa un mapa funcional ni el CRUD administrativo de T059.
+La raíz muestra la landing pública. En `/login` se accede al backend real; el administrador general entra a `/admin/empresas` y el de empresa a `/admin/empresa/rutas`, con accesos a Conductores y Micros. El panel consulta y guarda en la API de Laravel. Requiere tener el gateway y la base de datos disponibles.
+
+La vista `/admin/preview` conserva los ejemplos de diseño únicamente en desarrollo. Para probar persistencia utiliza el panel después del login. Consulta el [estado y las verificaciones de T059](src/modulos/administracion/README.md) y la [configuración local de autenticación/Docker](src/modulos/autenticacion/README.md).
 
 ## Comprobaciones
 
@@ -36,6 +38,9 @@ npm run lint
 | `npm run dev` | Iniciar el servidor de desarrollo con actualización al editar. |
 | `npm run build` | Comprobar TypeScript y generar la aplicación de producción en `dist/`. |
 | `npm run lint` | Revisar el código con ESLint. |
+| `npm run test:auth` | Regresiones locales de autenticación. |
+| `npm run test:rutas` | Validación del trazado y orden de coordenadas GeoJSON. |
+| `npm run test:crud` | Integración con API local; requiere habilitar explícitamente escrituras y credenciales locales, según la documentación de T059. |
 | `npm run preview` | Servir localmente el resultado de un build previo. |
 
 Para revisar la compilación en el navegador:

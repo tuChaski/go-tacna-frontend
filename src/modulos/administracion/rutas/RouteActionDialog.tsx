@@ -29,7 +29,7 @@ export function RouteActionDialog({ action, onClose }: RouteActionDialogProps) {
     aria-labelledby="route-action-title" aria-describedby="route-action-description">
     <span className="admin-icon-tile admin-warning-icon"><AlertTriangle size={24} aria-hidden="true" /></span>
     <h2 id="route-action-title">{deleting ? '¿Eliminar esta ruta?' : 'Cambiar estado de ruta'}</h2>
-    <p><strong>{referenceRoute.name}</strong> · {referenceRoute.originDestination}</p>
+    <p><strong>{referenceRoute.name}</strong> · {referenceRoute.trazado.length} puntos en el recorrido</p>
     <p id="route-action-description" className="admin-muted">{deleting
       ? 'Eliminar borrará la ruta definitivamente. Esta acción no se podrá deshacer. Si necesitas conservar su información, utiliza Desactivar.'
       : 'Desactivar conserva la información de la ruta. Puedes volver a activarla más adelante.'}</p>

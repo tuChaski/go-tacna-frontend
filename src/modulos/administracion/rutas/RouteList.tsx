@@ -1,3 +1,4 @@
+/** Listado de referencia; búsqueda por el único campo textual publicado: nombre. */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Pencil, Plus, Search, SlidersHorizontal, Trash2 } from 'lucide-react';
@@ -11,11 +12,11 @@ export function RouteList() {
   const [status, setStatus] = useState('all');
   const [action, setAction] = useState<'state' | 'delete' | null>(null);
   // Búsqueda solo sobre la referencia visual; luego se conectará al listado real.
-  const searchable = `${referenceRoute.name} ${referenceRoute.originDestination}`.toLocaleLowerCase('es');
+  const searchable = referenceRoute.name.toLocaleLowerCase('es');
   const matches = searchable.includes(query.trim().toLocaleLowerCase('es')) && status !== 'inactive';
 
   return <>
-    <PageHeading title="Rutas" description="Organiza los recorridos de Andino Demo y consulta sus puntos de referencia." />
+    <PageHeading title="Rutas" description="Organiza las rutas de Andino Demo y consulta sus recorridos." />
     <section className="admin-card admin-route-list" aria-label="Listado de rutas">
       <div className="admin-list-heading">
         <div><h2>Recorridos de la empresa</h2><p className="admin-small admin-muted">1 ruta de referencia para revisar el diseño</p></div>
@@ -24,7 +25,7 @@ export function RouteList() {
       <div className="admin-list-filters">
         <div className="admin-field admin-search-field">
           <label htmlFor="route-search">Buscar ruta</label>
-          <div className="admin-input-wrap"><Search size={18} aria-hidden="true" /><input id="route-search" type="search" placeholder="Nombre, origen o destino" value={query} onChange={event => setQuery(event.target.value)} /></div>
+          <div className="admin-input-wrap"><Search size={18} aria-hidden="true" /><input id="route-search" type="search" placeholder="Nombre de la ruta" value={query} onChange={event => setQuery(event.target.value)} /></div>
         </div>
         <div className="admin-field"><label htmlFor="route-status">Estado</label><select id="route-status" value={status} onChange={event => setStatus(event.target.value)}><option value="all">Todos los estados</option><option value="active">Activas</option><option value="inactive">Inactivas</option></select></div>
       </div>
@@ -32,7 +33,7 @@ export function RouteList() {
         <table className="admin-table admin-routes-table" aria-label="Rutas de referencia">
           <thead><tr><th scope="col">Ruta y recorrido</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
           <tbody><tr>
-            <td><span className="admin-record-name">{referenceRoute.name}</span><span className="admin-record-key">{referenceRoute.originDestination}</span></td>
+            <td><span className="admin-record-name">{referenceRoute.name}</span><span className="admin-record-key">{referenceRoute.trazado.length} puntos · Recorrido de ejemplo</span></td>
             <td><span className="admin-status-badge">Activa</span></td>
             <td><div className="admin-row-actions">
               <Link className="admin-button admin-outline" to={`${routesPreviewPath}/${referenceRoute.id}`}><Eye size={16} aria-hidden="true" />Ver</Link>
