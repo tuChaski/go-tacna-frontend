@@ -224,6 +224,8 @@ export default function App() {
           </div>
         </div>
 
+        {/* Entrada de T056: permite encontrar el acceso sin conocer su URL. */}
+        <a href="/login" className="ml-auto mr-4 shrink-0 border border-cyan-500/40 px-3 py-2 text-xs text-cyan-300 hover:bg-cyan-950/60 focus-visible:outline-2 focus-visible:outline-cyan-300">Iniciar sesión</a>
         {/* Status Widget Active Theory Style */}
         <div className="hidden md:flex items-center gap-6 text-xs">
           <div className="flex items-center gap-2 px-3 py-1 bg-black/60 border border-cyan-500/20 rounded-none">
