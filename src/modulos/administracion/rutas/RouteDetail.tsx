@@ -1,3 +1,6 @@
+/** Consulta de nombre y geometría del ejemplo. El mapa solo permite explorar;
+ * modificar los puntos requiere abrir el formulario de edición.
+ */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
@@ -7,6 +10,7 @@ import { RouteContext } from './RouteContext';
 import { RouteActionDialog } from './RouteActionDialog';
 import { routeFields } from './route-form';
 import { referenceRoute, routesPreviewPath } from './route-reference';
+import { MapaRuta } from './MapaRuta';
 
 export function RouteDetail() {
   const [action, setAction] = useState<'state' | 'delete' | null>(null);
@@ -26,6 +30,14 @@ export function RouteDetail() {
       </section>
       <RouteContext values={referenceRoute} />
     </div>
+    <section className="admin-card admin-form" aria-label="Recorrido de la ruta de ejemplo">
+      <h2>Recorrido en el mapa</h2>
+      <p className="admin-small admin-muted">Ejemplo para revisar el diseño; no es un recorrido de transporte verificado.</p>
+      <MapaRuta puntos={referenceRoute.trazado} />
+      <details><summary>Consultar coordenadas del recorrido</summary><ol className="admin-puntos-consulta">
+        {referenceRoute.trazado.map((punto, indice) => <li key={indice}>Punto {indice + 1}: {punto.latitud.toFixed(6)}, {punto.longitud.toFixed(6)}</li>)}
+      </ol></details>
+    </section>
     <PendingNotice />
     {action && <RouteActionDialog action={action} onClose={() => setAction(null)} />}
   </>;

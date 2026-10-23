@@ -1,5 +1,7 @@
 # T056 — Autenticación y registro web
 
+Actualización T059 (23/10/2026): los administradores ahora acceden al panel real de Empresas o de Rutas/Conductores/Micros. La pantalla mínima descrita en la evidencia de T056 corresponde a ese incremento histórico. Ver [integración administrativa](../administracion/README.md).
+
 Implementación en `feature/T056-autenticacion-web`. Contratos revisados: backend/main `be1c4eb` y docs/develop `e35b60f`. Conexión comprobada nuevamente con backend/main `b7c5aa2` e infraestructura/develop `193b72d`, sobre la base frontend/develop `7e33324`.
 
 ## Comportamiento

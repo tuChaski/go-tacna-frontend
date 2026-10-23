@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { AuthProvider } from '../../context/AuthContext';
 import InicioSesion from './InicioSesion';
 import { destinoSesion } from './destino-sesion';
+import { PanelAdministracion } from '../administracion/PanelAdministracion';
 
 function Cuenta({ destino }: { destino: '/admin' | '/admin/empresa' | '/cuenta' }) {
   const { user, isLoading, sessionError, retrySession, logout } = useAuth();
@@ -25,15 +26,13 @@ function Cuenta({ destino }: { destino: '/admin' | '/admin/empresa' | '/cuenta' 
     <button className="acceso-ingresar" onClick={retrySession}>Reintentar</button><button disabled={saliendo} onClick={() => void salir()}>Salir de este dispositivo</button></main>;
   if (!user) return <Navigate to="/login" replace />;
   if (destinoSesion(user.rol) !== destino) return <Navigate to={destinoSesion(user.rol)} replace />;
-  const titulo = user.rol === 'admin_general' ? 'Administración general' : user.rol === 'admin_empresa' ? 'Administración de empresa' : 'Mi cuenta';
+  // Se monta únicamente tras verificar sesión y rol, conservando el cierre de T056.
+  if (user.rol === 'admin_general' || user.rol === 'admin_empresa') return <PanelAdministracion usuario={user} saliendo={saliendo} alSalir={() => void salir()} />;
+  const titulo = 'Mi cuenta';
   return <main className="acceso-sesion">
     <p>Go Tacna · Sesión verificada</p><h1>{titulo}</h1><h2>Hola, {user.nombre} {user.apellido}</h2><p>{user.email}</p>
-    {user.rol === 'admin_empresa' && <section><h2>Empresas autorizadas</h2>{user.empresas.length
-      ? <ul>{user.empresas.map(empresa => <li key={empresa.id}>{empresa.razonSocial}</li>)}</ul>
-      : <p>No hay empresas vinculadas a tu cuenta. Contacta al administrador general.</p>}</section>}
     {/* No abre registros ficticios como si fueran datos de la sesión autenticada. */}
-    <p>{user.rol.startsWith('admin_') ? 'Tu sesión está activa. Las opciones de gestión aún no están habilitadas.'
-      : user.rol === 'conductor' ? 'Tu cuenta de conductor está verificada. Usa la aplicación móvil para operar el recorrido.' : 'Tu cuenta de pasajero está verificada.'}</p>
+    <p>{user.rol === 'conductor' ? 'Tu cuenta de conductor está verificada. Usa la aplicación móvil para operar el recorrido.' : 'Tu cuenta de pasajero está verificada.'}</p>
     <button className="acceso-ingresar" disabled={saliendo} onClick={() => void salir()}>{saliendo ? 'Cerrando sesión…' : 'Cerrar sesión'}</button>
     <a href="/">Volver al inicio</a>
   </main>;
@@ -43,8 +42,8 @@ export default function RutasAcceso() {
   return <AuthProvider><BrowserRouter><Routes>
     <Route path="/login" element={<InicioSesion key="login" />} />
     <Route path="/registro" element={<InicioSesion key="registro" registro />} />
-    <Route path="/admin" element={<Cuenta destino="/admin" />} />
-    <Route path="/admin/empresa" element={<Cuenta destino="/admin/empresa" />} />
+    <Route path="/admin/*" element={<Cuenta destino="/admin" />} />
+    <Route path="/admin/empresa/*" element={<Cuenta destino="/admin/empresa" />} />
     <Route path="/cuenta" element={<Cuenta destino="/cuenta" />} />
     <Route path="*" element={<Navigate to="/login" replace />} />
   </Routes></BrowserRouter></AuthProvider>;

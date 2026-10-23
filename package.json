@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test:auth": "node --test pruebas/autenticacion.test.mjs",
+    "test:rutas": "node --test pruebas/rutas.test.mjs",
+    "test:crud": "node pruebas/integracion-crud.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",

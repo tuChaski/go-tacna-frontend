@@ -62,7 +62,7 @@
 .admin-field label { font-size: 14px; line-height: 20px; font-weight: 500; }
 .admin-input-wrap { position: relative; }
 .admin-field input { width: 100%; min-height: 48px; padding: 12px; background: white; color: var(--admin-text); border: 1px solid var(--admin-border); border-radius: 8px; font: 400 16px/24px 'Inter Variable', Inter, sans-serif; }
-.admin-field input[name="password"] { padding-right: 52px; }
+.admin-field input[name="password"], .admin-field input[name="contrasena"] { padding-right: 52px; }
 .admin-field input:focus { outline: 3px solid #bfdbfe; outline-offset: 0; }
 .admin-field input[aria-invalid="true"] { border-color: #dc2626; }
 .admin-field-help, .admin-field-error { font-size: 14px; line-height: 20px; min-height: 20px; }
@@ -142,6 +142,51 @@
 .admin-context h2, .admin-context p { overflow-wrap: anywhere; max-width: 100%; }
 .admin-info-note { display: flex; gap: 12px; background: #f8fafc; border-radius: 12px; padding: 16px; color: #475569; font-size: 14px; line-height: 22px; }
 .admin-info-note svg { margin-top: 2px; color: #2563eb; }
+/* Editor de Rutas: el mapa conserva altura útil, los controles se adaptan y el
+   lienzo queda en un contexto propio para no cubrir diálogos de confirmación. */
+.admin-ruta-columns { display: grid; grid-template-columns: minmax(0, 2fr) minmax(250px, 1fr); gap: 24px; align-items: start; }
+.admin-trazado-editor, .admin-mapa-bloque { display: grid; gap: 16px; min-width: 0; }
+.admin-trazado-editor { border-top: 1px solid var(--admin-border); padding-top: 24px; margin-top: 8px; }
+.admin-trazado-editor:focus { outline: 3px solid #93c5fd; outline-offset: 4px; border-radius: 8px; }
+.admin-trazado-herramientas { display: flex; flex-wrap: wrap; gap: 8px; }
+.admin-trazado-herramientas .admin-button { min-height: 40px; padding: 8px 12px; font-size: 14px; }
+.admin-mapa { isolation: isolate; border: 1px solid var(--admin-border); border-radius: 12px; overflow: hidden; }
+.admin-mapa-lienzo { height: 380px; width: 100%; background: #e2e8f0; font-family: inherit; }
+.admin-mapa.seleccionando .leaflet-container { cursor: crosshair; }
+.admin-mapa .leaflet-control-attribution { color: #334155; background: rgb(255 255 255 / 95%); }
+.admin-mapa .leaflet-control-attribution a { color: #1d4ed8; }
+.admin-mapa .leaflet-tooltip { color: #0f172a; background: white; border-radius: 6px; }
+.admin-mapa-bloque > .admin-button { justify-self: start; }
+.admin-mapa-bloque > .admin-info-note { flex-wrap: wrap; }
+.admin-coordenadas { border: 1px solid var(--admin-border); border-radius: 12px; padding: 16px; min-width: 0; display: grid; gap: 12px; }
+.admin-coordenadas legend { padding: 0 8px; font-weight: 600; font-size: 14px; }
+.admin-coordenadas-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.admin-puntos-ruta { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; max-height: 400px; overflow-y: auto; }
+.admin-puntos-ruta li { padding: 12px; border: 1px solid var(--admin-border); border-radius: 10px; display: grid; gap: 12px; }
+.admin-puntos-ruta strong, .admin-puntos-ruta span { display: block; overflow-wrap: anywhere; }
+.admin-puntos-ruta span { color: var(--admin-muted); font-size: 14px; }
+.admin-puntos-consulta { padding-left: 24px; overflow-wrap: anywhere; }
+/* Panel conectado: reusa el lenguaje visual de la vista previa con estados reales
+   de servicio, formularios accesibles y separación entre cuentas y empresas. */
+.admin-preview .admin-shell { min-height: 100svh; }
+.admin-campos-conectados { display: grid; gap: 20px; min-width: 0; border: 0; margin: 0; padding: 0; }
+.admin-error-servicio { padding: 16px; border: 1px solid #fecaca; border-radius: 10px; background: #fef2f2; color: #991b1b; }
+.admin-mostrar-clave { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.admin-mostrar-clave input { width: 18px; height: 18px; }
+.admin-cuenta-vinculada { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 16px; border: 1px solid var(--admin-border); border-radius: 10px; }
+.admin-table caption { text-align: left; margin-bottom: 16px; color: var(--admin-muted); }
+@media (max-width: 1200px) { .admin-ruta-columns { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 700px) { .admin-coordenadas-campos { grid-template-columns: minmax(0, 1fr); } .admin-mapa-lienzo { height: 320px; } }
+/* Empresas: agrupa identidad y cuenta en columnas legibles; el resumen no compite
+   con el formulario. Las reglas se limitan a este módulo para conservar los demás. */
+.admin-empresa-columns { display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); gap: 24px; align-items: start; }
+.admin-empresa-section { border: 0; padding: 0; margin: 0; min-width: 0; }
+.admin-empresa-section + .admin-empresa-section { border-top: 1px solid var(--admin-border); padding-top: 24px; margin-top: 8px; }
+.admin-empresa-section legend { font-size: 20px; line-height: 28px; font-weight: 600; padding: 0 0 16px; }
+.admin-empresa-section > p { margin-bottom: 16px; }
+.admin-empresa-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+@media (max-width: 1200px) { .admin-empresa-columns { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 700px) { .admin-empresa-fields { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 1100px) { .admin-module-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 1000px) { .admin-columns { grid-template-columns: minmax(0, 1fr); } .admin-session { flex-wrap: wrap; } }
 @media (max-width: 700px) {

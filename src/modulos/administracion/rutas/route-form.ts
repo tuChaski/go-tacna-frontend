@@ -1,25 +1,28 @@
-/** Modelo del formulario; todavía no es un contrato de la API. */
+/** Nombre y trazado del formulario, alineados con RutaRequest del backend.
+ * El nombre conserva su clave local; la futura capa de servicio lo traducirá
+ * a nombre_ruta y obtendrá empresa_id del contexto autorizado.
+ */
+import { validarTrazado } from './trazado-ruta.ts';
+import type { PuntoRuta } from './trazado-ruta';
+
 export interface RouteFormValues {
   name: string;
-  originDestination: string;
-  startReference: string;
-  endReference: string;
+  trazado: PuntoRuta[];
 }
 
 export type RouteFormErrors = Partial<Record<keyof RouteFormValues, string>>;
 
-export const routeFields: { key: keyof RouteFormValues; label: string; placeholder: string; help: string }[] = [
+export const routeFields: { key: 'name'; label: string; placeholder: string; help: string }[] = [
   { key: 'name', label: 'Nombre de la ruta', placeholder: 'Ej. Línea 10', help: 'Nombre con el que identificarás la ruta.' },
-  { key: 'originDestination', label: 'Origen y destino', placeholder: 'Ej. Centro → Ciudad Nueva', help: 'Indica las zonas que conecta el recorrido.' },
-  { key: 'startReference', label: 'Referencia inicial', placeholder: 'Ej. Plaza de Armas', help: 'Lugar de referencia al inicio del recorrido.' },
-  { key: 'endReference', label: 'Referencia final', placeholder: 'Ej. Ciudad Nueva', help: 'Lugar de referencia al final del recorrido.' },
 ];
 
-// Se comprueba presencia. Unicidad y restricciones de operación requieren la API.
+// Valida presencia, máximo publicado y geometría. La unicidad por empresa es remota.
 export function validateRouteForm(values: RouteFormValues): RouteFormErrors {
   const errors: RouteFormErrors = {};
   for (const field of routeFields) {
     if (!values[field.key].trim()) errors[field.key] = `Completa el campo «${field.label}».`;
   }
+  if ([...values.name.trim()].length > 180) errors.name = 'Utiliza como máximo 180 caracteres.';
+  errors.trazado = validarTrazado(values.trazado);
   return errors;
 }
