@@ -10,9 +10,11 @@ const AdminPreview = import.meta.env.DEV ? lazy(() => import('./modulos/administ
 // El módulo de autenticación resuelve acceso, registro y destinos protegidos.
 // El maquetado de desarrollo se monta por separado y conserva su aviso de referencia.
 const isLogin = !isAdminPreview && /^\/(?:login|registro|cuenta|admin)(?:\/|$)/.test(window.location.pathname)
+const isInicio = !isAdminPreview && !isLogin
 
 if (isAdminPreview) rootElement.classList.add('admin-preview-root')
 if (isLogin) rootElement.classList.add('acceso-root')
+if (isInicio) rootElement.classList.add('inicio-root')
 
 createRoot(rootElement).render(
   <StrictMode>
