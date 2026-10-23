@@ -16,16 +16,12 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    try {
-      await api.post('/auth/logout');
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    }
+    // El proveedor controla la limpieza local y comunica si falló la invalidación remota.
+    await api.post('/auth/logout');
   },
 
-  async getProfile(): Promise<User> {
-    const response = await api.get<unknown>('/auth/me');
+  async getProfile(signal?: AbortSignal): Promise<User> {
+    const response = await api.get<unknown>('/auth/me', { signal });
     return adaptarPerfil(response.data);
   },
 };

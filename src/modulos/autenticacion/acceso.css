@@ -1,6 +1,6 @@
 /* Estilos exclusivos del acceso. El contenedor ocupa la ventana sin heredar
    el ancho, la tipografía ni los colores oscuros del ejemplo inicial de Vite. */
-#root.acceso-root { width: 100%; max-width: none; border: 0; text-align: left; }
+#root.acceso-root { width: 100%; max-width: none; border: 0; text-align: left; background: #f8fafc; }
 .acceso { --acceso-azul: #2563eb; --acceso-texto: #0f172a; --acceso-suave: #64748b;
   display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); min-height: 100svh;
   font: 400 16px/1.5 'Inter Variable', Inter, sans-serif; color: var(--acceso-texto); background: #f8fafc;
@@ -61,6 +61,19 @@
 .acceso-aviso { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px; margin: 0; color: #1e40af; font-size: 13px; }
 .acceso-soporte { color: var(--acceso-suave); font-size: 12px; margin: 24px 0 0; border-top: 1px solid #e2e8f0; padding-top: 22px; }
 .acceso-pie { font-size: 12px; color: var(--acceso-suave); margin: 0; }
+.acceso-ingresar:disabled { opacity: 0.65; cursor: wait; }
+.acceso input:disabled { background: #f8fafc; }
+.acceso-soporte a { color: #1d4ed8; text-decoration: underline; }
+/* Inicio autenticado mínimo: identidad real y alcance; las operaciones CRUD son T059. */
+.acceso-sesion { --acceso-azul: #2563eb; box-sizing: border-box; width: min(100%, 720px); margin: 48px auto; padding: 32px;
+  display: grid; gap: 20px; background: white; color: #0f172a; color-scheme: light;
+  font: 16px/1.5 'Inter Variable', sans-serif; border: 1px solid #e2e8f0; border-radius: 18px; }
+.acceso-sesion h1, .acceso-sesion h2 { margin: 0; color: #0f172a; font: 700 28px/1.3 'Inter Variable', sans-serif; }
+.acceso-sesion h2 { font-size: 20px; }
+.acceso-sesion p { margin: 0; overflow-wrap: anywhere; }
+.acceso-sesion button { cursor: pointer; padding: 12px; border-radius: 10px; }
+.acceso-sesion a { color: #1d4ed8; }
+.acceso-sesion :focus-visible { outline: 3px solid #60a5fa; outline-offset: 3px; }
 
 /* En pantallas pequeñas, la presentación se vuelve una cabecera y el formulario
    ocupa el ancho disponible; se conserva el tamaño de letra de los controles. */

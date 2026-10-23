@@ -1,66 +1,113 @@
-# T056 — Acceso administrativo, primer avance
+# T056 — Autenticación y registro web
 
-Rama: `feature/T056-autenticacion-web`, iniciada desde `develop` después de integrar el avance visual de T059. Esta entrega cubre la pantalla y validaciones del login administrativo por acuerdo con Alex. No completa el registro web ni toda T056.
+Implementación en `feature/T056-autenticacion-web`. Contratos revisados: backend/main `be1c4eb` y docs/develop `e35b60f`. Conexión comprobada nuevamente con backend/main `b7c5aa2` e infraestructura/develop `193b72d`, sobre la base frontend/develop `7e33324`.
 
-## Revisión local
+## Comportamiento
 
-Ejecutar `npm run dev` desde la raíz y abrir `/login` en el puerto indicado por Vite. `/login/` también resuelve la pantalla. La ruta existe tanto en desarrollo como en el build; el servidor de despliegue deberá permitir recarga de rutas SPA.
+- `/login`: correo y contraseña, mostrar/ocultar, validación local, espera de respuesta, bloqueo de doble envío y errores del servidor.
+- `/registro`: alta pública de pasajeros con DNI, nombres, apellidos, teléfono, correo, contraseña y confirmación. No permite escoger rol administrativo.
+- `/admin`: inicio de sesión de administrador general, con identidad real.
+- `/admin/empresa`: inicio de administrador de empresa, mostrando las empresas que devuelve su perfil. Admite varias empresas sin escoger una por suposición.
+- `/cuenta`: confirmación de cuenta de pasajero o conductor. No implementa los módulos públicos de T057 ni el modo conductor móvil.
+- Entrar directamente sin sesión lleva al login. Un rol diferente regresa a su propio destino.
+- Recargar comprueba el token con `/auth/me`. Ante fallo de conexión, el contenido protegido no se muestra y se ofrece reintentar o salir localmente.
+- Cerrar sesión solicita la invalidación al servidor y limpia el dispositivo. Si la API no responde, se informa que no pudo confirmarse la invalidación remota. El cierre se sincroniza entre pestañas del mismo origen.
 
-En la vista administrativa de desarrollo, «Salir de la vista» navega a `/login`; no ejecuta logout ni invalida sesiones. Los enlaces «Volver al inicio» y la marca del login regresan a la landing. No se cambia el formulario promocional de la landing.
+Los destinos autenticados son una entrada mínima de cuenta, no el CRUD completo. `/admin/preview` conserva el maquetado ficticio de T059, exclusivo de desarrollo. No se presenta su información como datos reales de la cuenta. La integración de operaciones CRUD sigue en T059; el refresco automático de tokens corresponde a T102.
 
-## Organización y decisiones
+## Contrato y separación de responsabilidades
 
-- `InicioSesion.tsx`: campos en memoria, validación al salir/corregir/enviar, foco del primer error, mostrar/ocultar y aviso de integración pendiente.
-- `Acceso.tsx`: componente de entrada que carga la pantalla de forma diferida y muestra su estado de carga.
-- `formulario-acceso.ts`: tipos locales y validación pura de presencia y formato básico de correo; no es un payload del backend.
-- `acceso.css`: estilos limitados al módulo, con ajuste de ancho del contenedor del login y adaptación para móvil. Usa Inter ya instalada y lucide-react existente; no añade dependencias ni imágenes remotas.
-- `src/main.tsx`: carga diferida de la pantalla para `/login`, manteniendo el montaje existente del resto de la aplicación.
+| Operación | Contrato vigente |
+|---|---|
+| Login | `POST /auth/login`, cuerpo `{ correo, password }` |
+| Registro | `POST /auth/register`, cuerpo `{ dni, nombre, apellido, correo, telefono, password }` |
+| Sesión | `{ success: true, data: { usuario, token, tipo: 'bearer' } }` |
+| Perfil | `GET /auth/me`, respuesta `{ success: true, data: usuario }` |
+| Salida | `POST /auth/logout` con Bearer token |
+| Roles | `admin_general`, `admin_empresa`, `pasajero`, `conductor` |
 
-La referencia es [T053 / login en Figma](https://www.figma.com/design/Lw9Pbwc65lMKyjsW5IWZaD/go-tacna?node-id=70-17228), consultada mediante la guía de diseño a código. Alex permite una adaptación moderna: se conserva el propósito, las credenciales y la presentación de Go Tacna. Los botones de selección de perfil del prototipo se omiten porque el backend deberá determinar los permisos; no se ofrece escoger rol ni registro público de administradores.
+El usuario publica `nombre`, `apellido`, `correo`, `rol` y `activo`. El alcance empresarial se obtiene de `administrador_empresa_perfiles`, incluyendo su empresa. El adaptador selecciona los datos necesarios y rechaza estructuras incompatibles, usuarios inactivos y tokens vacíos; no interpreta el JWT para asignar permisos.
 
-El correo y la contraseña comienzan vacíos. No se guardan ni se imprimen credenciales; no hay solicitudes de autenticación en esta etapa. Al enviar campos válidos se muestra un aviso explícito sin crear sesión ni abrir panel. La validación de correo ignora espacios exteriores para comprobar formato; la contraseña no se recorta ni se le impone una longitud nueva al acceder a cuentas existentes. El backend determinará su validez real.
+Solo se persiste el token con el mecanismo local existente. No se guarda contraseña ni se confía en una copia persistida del usuario. La API sigue siendo responsable de la autorización y el aislamiento por empresa; la navegación por rol del frontend es una ayuda de interfaz.
 
-## Contrato e integración pendiente
+El interceptor agrega Bearer y maneja 401 de una sesión vigente mediante un evento. Los 401 de login/registro se muestran como errores de acceso; una respuesta tardía de un token anterior no elimina una sesión nueva. El timeout HTTP es de 15 segundos. No se implementa refresh automático en este incremento.
 
-Se revisaron las rutas de autenticación y la migración de usuarios de backend/main en `6cbe163`. El servidor usa `role: admin` sin distinguir aún administrador general y de empresa. Se acordó terminar primero la interfaz. Posteriormente se preparó un adaptador para los nombres y envoltorios ya confirmados por el controlador, manteniendo la pantalla sin solicitudes hasta acordar los perfiles administrativos.
+## Archivos para revisión
 
-### Preparado para integrar en develop
+- `InicioSesion.tsx`: formularios compartidos, campos temporales, foco del primer error y envío al proveedor.
+- `formulario-acceso.ts`: validaciones locales alineadas con LoginRequest/RegisterRequest. No exige DNI de ocho dígitos porque ese formato no aparece en el contrato publicado.
+- `errores-acceso.ts`: mensajes controlados de HTTP/red y traducción de errores por campo; no muestra trazas ni respuestas crudas.
+- `RutasAcceso.tsx`: rutas y entradas protegidas, identidad y cierre de sesión.
+- `destino-sesion.ts`: decisión de navegación por los cuatro roles publicados.
+- `Acceso.tsx`: carga diferida del módulo.
+- `acceso.css`: presentación adaptable y estilos aislados.
+- `src/context/AuthContext.tsx`: validación/restauración de sesión, cambios entre pestañas y descarte de respuestas antiguas.
+- `src/services/adaptador-autenticacion.ts`: traducción y comprobación de las estructuras HTTP.
+- `src/services/authService.ts`: llamadas HTTP; la política de sesión pertenece al proveedor.
+- `pruebas/autenticacion.test.mjs`: regresiones de contrato y validación con datos ficticios, sin red.
 
-`src/services/adaptador-autenticacion.ts` concentra el contrato confirmado. `authService.ts` usa ese adaptador para login, registro y perfil. Se mantienen sus firmas locales para el proveedor existente; los errores HTTP siguen propagándose al consumidor.
+La pantalla administrativa parte de T053/Figma y se adapta al estilo moderno autorizado por Alex. Registro utiliza los mismos componentes y las reglas confirmadas del backend.
 
-| Operación | Datos locales | Contrato de Laravel |
-|---|---|---|
-| POST `/auth/login` | `email`, `contrasena` | `email`, `password` |
-| POST `/auth/register` | `nombre`, `email`, `contrasena` | `name`, `email`, `password`; registro público de pasajeros |
-| Respuesta login/registro | `{ user, token }` | `{ success: true, data: { user, token, type: 'bearer' } }` |
-| GET `/auth/me` | Usuario local | `{ success: true, data: usuario }` |
-| Usuario | `nombre`, `rol` | `name`, `role`; exige `activo: true` |
+## Ejecución local
 
-El adaptador comprueba la estructura recibida, rechaza tokens vacíos/perfiles inesperados y conserva solo los campos necesarios del usuario. No deduce permisos desde el contenido del JWT. La contraseña mantiene su valor original; el correo se recorta en los extremos al preparar la solicitud. Se revisará este archivo cuando el compañero publique el contrato actualizado; no se agregan roles hipotéticos.
+Desde la raíz del frontend:
 
-Los nombres de columnas de la BD no tienen que coincidir con los controles visuales. El contrato HTTP decide la adaptación. Por ejemplo, correo/contraseña del login siguen siendo suficientes aunque cambien las tablas administrativas; empresa y permisos deben obtenerse de la sesión del servidor.
+```powershell
+npm ci
+npm run dev
+```
 
-Para probar contra servidor se confirmará `VITE_API_BASE_URL` en el entorno local, incluyendo `/api/v1`, y CORS/origen permitido. No se cambió el valor de entorno ni se conectó una BD directamente desde React. La configuración pública puede documentarse; secretos y cuentas reales no deben incluirse en el PR.
+`VITE_API_BASE_URL` debe apuntar al gateway, incluyendo `/api/v1`. En estas pruebas: `http://localhost:8001/api/v1`. El origen usado por Vite (`http://127.0.0.1:5173` o `http://localhost:5173`) debe estar permitido por CORS del gateway.
 
-Pendientes de T056 o su integración:
+Las rutas `/login`, `/registro`, `/cuenta` y `/admin` también se incluyen en el build de producción. El servidor que lo publique debe devolver `index.html` para las rutas SPA.
 
-1. Confirmar tipos administrativos, empresa asociada y respuestas de login/perfil/logout.
-2. Revisar el adaptador con el contrato definitivo y resolver el montaje/verificación del proveedor de sesión, considerando el PR T055 pendiente de integración.
-3. Conectar autenticación, proteger rutas, restaurar/verificar sesión y definir el cierre real.
-4. Añadir carga, prevención de doble envío y errores de credenciales, cuenta desactivada, conexión y servidor cuando exista una operación real.
-5. Revisar el resto del alcance de T056: el registro público de usuarios es distinto del acceso de administradores.
+### Entorno Docker usado para verificar
 
-No se prueban todavía autorización, persistencia de sesión, cuentas reales ni aislamiento por empresa. El panel T059 sigue siendo una vista previa y no debe tratarse como destino autenticado.
+El arranque inicial con infraestructura/develop `de89fa3` presentó dos obstáculos en esta copia de Windows; la actualización `193b72d` solo cambia el timeout y conserva estos archivos:
 
-## Verificación
+1. El Dockerfile del frontend intenta `COPY nginx.conf` desde un contexto donde ese archivo no existe.
+2. El script PHP descargado con CRLF no se ejecuta directamente por su shebang de Linux.
 
-- `npm run build`: pasa; continúa la advertencia de tamaño del bundle de la landing. El login genera su propio archivo diferido con CSS y fuentes locales.
-- ESLint de `src/main.tsx`, `src/modulos/autenticacion` y `AdminPreview.tsx`: pasa. El lint global detectó el error previo en `src/context/AuthContext.tsx:68`; su corrección pertenece al PR T055 pendiente de integración.
-- Siete aserciones del validador: vacíos, espacios, correo inválido, espacios internos en correo, datos completos, contraseña sin modificación y ausencia de longitud mínima impuesta al login.
-- Navegador: dos errores en envío vacío, foco en correo, rechazo de correo inválido, corrección de errores, mostrar/ocultar, envío con Enter, aviso pendiente y limpieza del aviso al cambiar datos.
-- Navegación: «Salir de la vista» desde el inicio de empresa abre `/login` con campos vacíos; no se ejecuta logout.
-- Inspección visual a 1440 × 1080 y 390 × 844, sin desbordamiento horizontal en móvil. No se observaron errores de consola en el recorrido revisado. No se prueba toda la matriz de navegadores.
+Para probar T056 se levantaron solo PostgreSQL, core y gateway, manteniendo Vite en el host. Se creó un override temporal en `$env:TEMP\gotacna-t056.override.yml`, fuera de los repositorios, que publica el gateway en loopback 8001, permite los dos orígenes Vite y normaliza CRLF al ejecutar el entrypoint. No se modificó código de backend ni infraestructura.
 
-Estas comprobaciones no equivalen a pruebas completas de autenticación. No se usaron cuentas reales ni se enviaron credenciales al servidor.
+Mientras exista ese archivo temporal, desde infraestructura:
 
-Adaptador: 16 casos locales con datos ficticios comprueban payloads, respuestas de sesión/perfil, los tres roles publicados, estructuras inválidas, token vacío, tipo de token incorrecto, usuario inactivo y selección de campos. Son comprobaciones de transformación, no una prueba HTTP ni una sesión real.
+```powershell
+$entornoT056 = Join-Path $env:TEMP 'gotacna-t056.override.yml'
+docker compose -f docker-compose.yml -f $entornoT056 up -d --wait postgres backend gateway
+docker compose ps
+```
+
+Para detenerlos conservando la BD: `docker compose stop gateway backend postgres`. No usar `down -v` para una parada normal. El entorno conserva sus volúmenes locales. Las cuentas del seeder son solo de demostración; no usar esos datos en producción.
+
+## Verificación — 22/10/2026
+
+### Revisión de conexión después de actualizar backend e infraestructura
+
+Con backend/main `b7c5aa2` e infraestructura/develop `193b72d` ya incorporados por Alex, se recreó únicamente el gateway con el override temporal y se comprobó `CORE_API_TIMEOUT=60`. PostgreSQL, core y gateway quedaron saludables, conservando la BD. El cambio del proxy desactiva redirecciones y aumenta el tiempo de espera; no modifica el contrato de autenticación. El timeout del frontend sigue siendo de 15 segundos.
+
+Se repitieron en el navegador el login del administrador general y de empresa, la recuperación de sesión al recargar, la empresa autorizada del perfil, la redirección del administrador de empresa al intentar entrar en `/admin`, el cierre de sesión de ambos perfiles, el rechazo de acceso directo sin sesión y el mensaje de contraseña incorrecta. Todos funcionaron con el gateway actualizado. Al finalizar se dejó el navegador sin sesión. Esta revisión específica no repitió el registro ni toda la batería anterior; sus resultados se detallan a continuación.
+
+### Verificación inicial del incremento
+
+- `npm run build`: pasa; mantiene la advertencia previa del tamaño del bundle de la landing.
+- `npm run lint`: pasa globalmente después de integrar T055.
+- `npm run test:auth`: 18 pruebas pasan. Cubren payloads, respuestas, roles, alcance, datos incompatibles, validación y destinos.
+- Navegador contra gateway + Laravel + PostgreSQL: acceso de administrador general y de empresa; empresa real del perfil; recarga; redirección por rol y rechazo del acceso directo sin sesión.
+- Registro real de una cuenta ficticia de pasajero; confirmación de contraseña; recarga con sesión y bloqueo de destinos administrativos.
+- HTTP 401 por contraseña incorrecta; HTTP 403 con la cuenta ficticia desactivada temporalmente; HTTP 422 por DNI/correo duplicados y foco en el primer campo. La cuenta quedó reactivada.
+- Gateway detenido temporalmente: mensaje de red en login, bloqueo al restaurar una sesión sin poder verificarla y aviso honesto al salir localmente. Gateway restaurado y saludable al terminar.
+- Cerrar sesión en una pestaña devuelve la otra al login.
+- Registro revisado a 390 × 844, sin desbordamiento horizontal; evidencia de sesiones reales y registro móvil guardada fuera de Git.
+
+Se ejecutaron también AuthTest y AdminScopeTest del backend: 16 casos, 62 aserciones, sin fallos y con 16 advertencias por ausencia de `.env` en el contenedor. El primer arranque de pruebas heredó PostgreSQL del entorno y reinicializó únicamente la BD local recién creada para esta verificación; se repusieron los datos de demostración. Después se repitió con aislamiento SQLite explícito y se confirmó que PostgreSQL conserva sus seis usuarios locales (cinco de demostración y uno ficticio de T056).
+
+Comando aislado para esas pruebas, desde infraestructura:
+
+```powershell
+docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: -e DB_URL= -e CACHE_STORE=array -e SESSION_DRIVER=array backend php artisan test --testsuite=Feature --filter='AuthTest|AdminScopeTest'
+```
+
+Estas verificaciones no son una auditoría completa de seguridad ni pruebas con usuarios. No se declara conectado el CRUD T059 ni verificado el refresco T102. Antes del cierre administrativo de #92, Alex y el equipo deben revisar este incremento y su PR hacia develop.
+
+También se añadió el enlace «Iniciar sesión» en la cabecera de la landing y se verificó su navegación hasta el acceso. El resto de la landing mantiene su comportamiento existente.

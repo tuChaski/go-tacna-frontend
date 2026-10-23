@@ -7,9 +7,9 @@ import { Acceso } from './modulos/autenticacion/Acceso'
 const rootElement = document.getElementById('root')!
 const isAdminPreview = import.meta.env.DEV && /^\/admin\/preview(?:\/|$)/.test(window.location.pathname)
 const AdminPreview = import.meta.env.DEV ? lazy(() => import('./modulos/administracion/AdminPreview')) : null
-// El login tiene URL propia también en producción; su primera entrega valida
-// campos, mientras la autenticación y los destinos por rol esperan el contrato.
-const isLogin = /^\/login\/?$/.test(window.location.pathname)
+// El módulo de autenticación resuelve acceso, registro y destinos protegidos.
+// El maquetado de desarrollo se monta por separado y conserva su aviso de referencia.
+const isLogin = !isAdminPreview && /^\/(?:login|registro|cuenta|admin)(?:\/|$)/.test(window.location.pathname)
 
 if (isAdminPreview) rootElement.classList.add('admin-preview-root')
 if (isLogin) rootElement.classList.add('acceso-root')

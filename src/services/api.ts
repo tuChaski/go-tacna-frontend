@@ -2,8 +2,10 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api/v1',
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
+    Accept: 'application/json',
   },
 });
 
@@ -23,13 +25,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    // No invalida por credenciales erróneas ni por respuestas tardías de otro token.
+    const esAcceso = /\/auth\/(login|register)$/.test(error.config?.url ?? '');
+    const tokenActual = localStorage.getItem('token');
+    if (error.response?.status === 401 && !esAcceso && tokenActual
+      && error.config?.headers?.Authorization === `Bearer ${tokenActual}`) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Redirigir al login si falla la autenticación
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
+      window.dispatchEvent(new Event('sesion-invalidada'));
     }
     return Promise.reject(error);
   }
