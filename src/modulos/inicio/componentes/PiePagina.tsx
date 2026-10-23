@@ -1,10 +1,12 @@
 import { BusFront, MapPin } from 'lucide-react';
+import { useAuth } from '../../../hooks/useAuth';
+import { enlaceCuenta, etiquetaCuenta } from '../../autenticacion/enlaces-sesion';
 
 const ENLACES_PRODUCTO = [
   { href: '#caracteristicas', etiqueta: 'Características' },
   { href: '#rutas', etiqueta: 'Rutas' },
   { href: '#empresas', etiqueta: 'Para empresas' },
-  { href: '#mapa-vivo', etiqueta: 'Mapa 3D' },
+  { href: '/mapa', etiqueta: 'Mapa 3D' },
 ];
 
 const ENLACES_CUENTA = [
@@ -15,6 +17,13 @@ const ENLACES_CUENTA = [
 
 export function PiePagina() {
   const anio = new Date().getFullYear();
+  const { user } = useAuth();
+  const enlacesCuenta = user
+    ? [
+        { href: enlaceCuenta(user), etiqueta: etiquetaCuenta(user) },
+        { href: '/mapa', etiqueta: 'Mapa 3D' },
+      ]
+    : ENLACES_CUENTA;
 
   return (
     <footer className="border-t border-white/10 bg-[#081b3d] text-blue-100/65">
@@ -65,7 +74,7 @@ export function PiePagina() {
               Cuenta
             </h2>
             <ul className="mt-4 space-y-2.5">
-              {ENLACES_CUENTA.map(enlace => (
+              {enlacesCuenta.map(enlace => (
                 <li key={enlace.etiqueta}>
                   <a
                     href={enlace.href}

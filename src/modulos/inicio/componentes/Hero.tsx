@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Clock3, Download, MapPin, Radio, ShieldCheck, Wifi } from 'lucide-react';
+import { BusFront, Download, MapPin, Radio, ShieldCheck } from 'lucide-react';
 import type { DatosInicio } from '../datos/tipos-inicio';
 import { MockupApp } from './MockupApp';
 
@@ -8,8 +8,8 @@ interface Props {
 }
 
 const SENALES = [
-  { icono: Wifi, texto: 'GPS en vivo' },
-  { icono: Clock3, texto: 'ETA referencial' },
+  { icono: MapPin, texto: 'Trazados reales' },
+  { icono: BusFront, texto: 'Unidades activas' },
   { icono: ShieldCheck, texto: 'Datos de tu ciudad' },
 ];
 
@@ -36,7 +36,7 @@ export function Hero({ datos }: Props) {
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-blue-300/20 bg-white/5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-100 backdrop-blur sm:text-[11px]">
               <Radio size={13} className="text-emerald-400" aria-hidden="true" />
-              Tacna · transporte urbano en tiempo real
+              Tacna · movilidad urbana
             </span>
 
             <h1 className="mt-6 text-4xl font-extrabold leading-[1.06] tracking-[-0.035em] text-white sm:text-5xl lg:text-[3.6rem] xl:text-[4.05rem]">
@@ -47,17 +47,17 @@ export function Hero({ datos }: Props) {
             </h1>
 
             <p className="mt-6 max-w-xl text-base leading-7 text-blue-100/80 sm:text-lg sm:leading-8">
-              Consulta las rutas, mira dónde están los micros y calcula tu llegada con
-              geolocalización. Muévete por Tacna con información clara, desde tu celular.
+              Consulta las rutas registradas, explora las unidades activas y recorre la ciudad
+              en una vista 3D referencial. Muévete por Tacna con información clara, desde tu celular.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <a
-                href="#mapa-vivo"
+                href="/mapa"
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#1d63ed] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
               >
                 <MapPin size={18} aria-hidden="true" />
-                Ver mapa en vivo
+                Abrir mapa 3D
               </a>
               <button
                 type="button"

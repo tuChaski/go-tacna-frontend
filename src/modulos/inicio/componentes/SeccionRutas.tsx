@@ -46,10 +46,10 @@ function TarjetaRuta({ ruta, micros, indice, esRespaldo }: { ruta: RutaInicio; m
           </div>
 
           <a
-            href="#mapa-vivo"
+            href="/mapa"
             className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#1d63ed] transition hover:gap-2.5 hover:text-blue-700"
           >
-            Ver recorrido
+            Ver en mapa 3D
             <ArrowRight size={14} aria-hidden="true" />
           </a>
         </div>
@@ -87,7 +87,7 @@ export function SeccionRutas({ rutas, micros, cargando, esRespaldo }: Props) {
               </span>
             )}
             <a
-              href="#mapa-vivo"
+              href="/mapa"
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-blue-200 hover:text-[#1d63ed]"
             >
               <MapPin size={15} aria-hidden="true" />

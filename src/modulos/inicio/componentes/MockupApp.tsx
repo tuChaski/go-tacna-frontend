@@ -31,7 +31,7 @@ export function MockupApp({ rutas, micros, cargando, esRespaldo }: Props) {
           </div>
           <p className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-[#1d63ed]">
             <Clock3 size={13} aria-hidden="true" />
-            Llega en 3 min
+            Llegada aprox. 3 min
           </p>
         </div>
       )}
@@ -39,7 +39,7 @@ export function MockupApp({ rutas, micros, cargando, esRespaldo }: Props) {
       {(micros.length > 0 || esRespaldo) && (
         <div className="absolute -right-3 top-24 z-10 hidden animate-pulso-suave items-center gap-2 rounded-full border border-white/20 bg-[#081b3d]/85 px-3 py-1.5 text-[10px] font-semibold text-blue-100 shadow-lg backdrop-blur lg:flex">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          GPS activo
+          Vista 3D
         </div>
       )}
 
@@ -61,15 +61,21 @@ export function MockupApp({ rutas, micros, cargando, esRespaldo }: Props) {
           </div>
 
           <div className="relative h-[300px] overflow-hidden sm:h-[340px]">
-            <Suspense
-              fallback={(
-                <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_50%_45%,rgba(29,99,237,0.3),transparent_68%)]">
-                  <p className="text-xs font-medium text-blue-200/80">Cargando mapa 3D…</p>
-                </div>
-              )}
-            >
-              <MapaBuses3D rutas={rutasVisibles} micros={micros} mostrarBusesDemo={esRespaldo} />
-            </Suspense>
+            {cargando ? (
+              <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_50%_45%,rgba(29,99,237,0.3),transparent_68%)]">
+                <p className="text-xs font-medium text-blue-200/80" role="status">Cargando mapa 3D…</p>
+              </div>
+            ) : (
+              <Suspense
+                fallback={(
+                  <div className="grid h-full place-items-center bg-[radial-gradient(circle_at_50%_45%,rgba(29,99,237,0.3),transparent_68%)]">
+                    <p className="text-xs font-medium text-blue-200/80">Cargando mapa 3D…</p>
+                  </div>
+                )}
+              >
+                <MapaBuses3D rutas={rutasVisibles} micros={micros} mostrarBusesDemo={esRespaldo} />
+              </Suspense>
+            )}
 
             <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-3">
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-[#081b3d]/75 px-2.5 py-1.5 text-[10px] font-medium text-blue-100 backdrop-blur">
@@ -78,7 +84,7 @@ export function MockupApp({ rutas, micros, cargando, esRespaldo }: Props) {
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-[#081b3d]/75 px-2.5 py-1.5 text-[10px] font-medium text-blue-100 backdrop-blur">
                 <Radio size={12} className="text-emerald-400" aria-hidden="true" />
-                En vivo
+                Demo 3D
               </span>
             </div>
 

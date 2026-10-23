@@ -1,4 +1,6 @@
 import { ArrowRight, Building2, BusFront, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { useAuth } from '../../../hooks/useAuth';
+import { enlaceCuenta, tienePanelAdministrativo } from '../../autenticacion/enlaces-sesion';
 
 const ROLES = [
   {
@@ -25,6 +27,14 @@ const BENEFICIOS = [
 ];
 
 export function SeccionFlotas() {
+  const { user } = useAuth();
+  const enlacePanel = enlaceCuenta(user);
+  const etiquetaPanel = user
+    ? tienePanelAdministrativo(user) ? 'Ir a mi panel' : 'Ir a mi cuenta'
+    : 'Ingresar al panel';
+  const enlaceSecundario = user ? '/mapa' : '/registro';
+  const etiquetaSecundaria = user ? 'Abrir mapa 3D' : 'Registrar mi empresa';
+
   return (
     <section id="empresas" className="relative isolate scroll-mt-24 overflow-hidden bg-gradient-to-br from-[#0e2d63] via-[#0a2350] to-[#081b3d] py-20 sm:py-24">
       <div className="pointer-events-none absolute -left-24 top-16 h-72 w-72 rounded-full bg-[#1d63ed]/25 blur-3xl" />
@@ -57,17 +67,17 @@ export function SeccionFlotas() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
-                href="/login"
+                href={enlacePanel}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#0e2d63] shadow-lg shadow-blue-950/20 transition hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
               >
-                Ingresar al panel
+                {etiquetaPanel}
                 <ArrowRight size={17} aria-hidden="true" />
               </a>
               <a
-                href="/registro"
+                href={enlaceSecundario}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
               >
-                Registrar mi empresa
+                {etiquetaSecundaria}
               </a>
             </div>
           </div>

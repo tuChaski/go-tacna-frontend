@@ -60,6 +60,10 @@
     text-align: left;
   }
 
+  #root.mapa-root {
+    background: #081b3d;
+  }
+
   ::selection {
     background: #1d63ed;
     color: #ffffff;

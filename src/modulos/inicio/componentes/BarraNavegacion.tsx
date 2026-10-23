@@ -1,15 +1,21 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, BusFront, Menu, X } from 'lucide-react';
+import { useAuth } from '../../../hooks/useAuth';
+import { enlaceCuenta, etiquetaCuenta } from '../../autenticacion/enlaces-sesion';
 
 const ENLACES = [
   { href: '#caracteristicas', etiqueta: 'Características' },
   { href: '#rutas', etiqueta: 'Rutas' },
+  { href: '/mapa', etiqueta: 'Mapa 3D' },
   { href: '#empresas', etiqueta: 'Para empresas' },
 ];
 
 export function BarraNavegacion() {
   const [abierto, establecerAbierto] = useState(false);
   const [desplazado, establecerDesplazado] = useState(false);
+  const { user, isLoading } = useAuth();
+  const hrefCuenta = enlaceCuenta(user);
+  const textoCuenta = isLoading ? 'Cuenta' : etiquetaCuenta(user);
 
   useEffect(() => {
     const alDesplazar = () => establecerDesplazado(window.scrollY > 24);
@@ -67,14 +73,14 @@ export function BarraNavegacion() {
 
         <div className="hidden items-center gap-2 md:flex">
           <a
-            href="/login"
+            href={hrefCuenta}
             className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
               desplazado
                 ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 : 'text-blue-100 hover:bg-white/10 hover:text-white'
             }`}
           >
-            Iniciar sesión
+            {textoCuenta}
           </a>
           <a
             href="#rutas"
@@ -125,13 +131,13 @@ export function BarraNavegacion() {
               </a>
             ))}
             <a
-              href="/login"
+              href={hrefCuenta}
               onClick={cerrar}
               className={`flex min-h-12 items-center rounded-xl px-4 text-sm font-semibold transition ${
                 desplazado ? 'text-slate-900 hover:bg-slate-100' : 'text-white hover:bg-white/10'
               }`}
             >
-              Iniciar sesión
+              {textoCuenta}
             </a>
             <a
               href="#rutas"

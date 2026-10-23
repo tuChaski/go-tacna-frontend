@@ -61,10 +61,10 @@ function convertirRuta(ruta: RutaApi, indice: number): RutaInicio | null {
  */
 export function useDatosInicio(): DatosInicio {
   const [datos, establecerDatos] = useState<DatosInicio>({
-    rutas: rutasRespaldo,
-    micros: microsRespaldo,
+    rutas: [],
+    micros: [],
     cargando: true,
-    esRespaldo: true,
+    esRespaldo: false,
   });
 
   useEffect(() => {

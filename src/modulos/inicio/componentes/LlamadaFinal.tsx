@@ -1,6 +1,16 @@
 import { ArrowRight, Download } from 'lucide-react';
+import { useAuth } from '../../../hooks/useAuth';
+import { enlaceCuenta, tienePanelAdministrativo } from '../../autenticacion/enlaces-sesion';
 
 export function LlamadaFinal() {
+  const { user } = useAuth();
+  const enlacePrincipal = user ? enlaceCuenta(user) : '/registro';
+  const etiquetaPrincipal = user
+    ? tienePanelAdministrativo(user) ? 'Ir a mi panel' : 'Ir a mi cuenta'
+    : 'Crear cuenta gratis';
+  const enlaceSecundario = user ? '/mapa' : '/login';
+  const etiquetaSecundaria = user ? 'Abrir mapa 3D' : 'Iniciar sesión';
+
   return (
     <section className="bg-white py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
@@ -17,24 +27,25 @@ export function LlamadaFinal() {
                 Tu próximo micro está a un clic
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100/85 sm:text-base">
-                Crea tu cuenta, consulta las rutas de Tacna y organiza tus viajes con información
-                clara desde el primer momento.
+                {user
+                  ? 'Tu sesión está activa. Continúa desde tu cuenta o explora el mapa 3D de las rutas de Tacna.'
+                  : 'Crea tu cuenta, consulta las rutas de Tacna y organiza tus viajes con información clara desde el primer momento.'}
               </p>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
               <a
-                href="/registro"
+                href={enlacePrincipal}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#1d63ed] shadow-lg shadow-blue-950/15 transition hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
-                Crear cuenta gratis
+                {etiquetaPrincipal}
                 <ArrowRight size={17} aria-hidden="true" />
               </a>
               <a
-                href="/login"
+                href={enlaceSecundario}
                 className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 bg-white/5 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
-                Iniciar sesión
+                {etiquetaSecundaria}
               </a>
             </div>
           </div>
