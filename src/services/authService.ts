@@ -1,4 +1,4 @@
-import api from './api';
+import api, { cerrarSesionRemota } from './api';
 import type { AuthResponse, LoginCredentials, User } from '../types/auth';
 import { adaptarPerfil, adaptarSesion, prepararLogin, prepararRegistro } from './adaptador-autenticacion';
 import type { DatosRegistro } from './adaptador-autenticacion';
@@ -16,8 +16,8 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    // El proveedor controla la limpieza local y comunica si falló la invalidación remota.
-    await api.post('/auth/logout');
+    // Cancela renovaciones y limpia el dispositivo antes de esperar a la API.
+    await cerrarSesionRemota();
   },
 
   async getProfile(signal?: AbortSignal): Promise<User> {

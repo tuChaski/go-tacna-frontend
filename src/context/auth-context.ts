@@ -11,6 +11,7 @@ interface AuthContextType {
   register: (datos: DatosRegistro) => Promise<User>;
   logout: () => Promise<boolean>;
   sessionError: string | null;
+  sessionNotice: string | null;
   retrySession: () => void;
 }
 
