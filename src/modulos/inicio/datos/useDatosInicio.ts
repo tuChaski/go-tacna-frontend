@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../../../services/api';
+import { apiPublica as api } from '../../../services/api';
 import type { CoordenadaRuta, DatosInicio, MicroInicio, RutaInicio } from './tipos-inicio';
 import { microsRespaldo, rutasRespaldo } from './rutas-respaldo';
 

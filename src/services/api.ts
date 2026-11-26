@@ -8,6 +8,9 @@ const configuracion = {
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 };
 const api = axios.create(configuracion);
+// La consulta pública comparte URL y tiempos de espera, pero nunca adjunta el
+// JWT del administrador ni dispara renovaciones de una sesión ajena a la consulta.
+export const apiPublica = axios.create(configuracion);
 // Sin interceptores de sesión: evita que refresh/logout provoquen otra renovación.
 const autenticacion = axios.create(configuracion);
 

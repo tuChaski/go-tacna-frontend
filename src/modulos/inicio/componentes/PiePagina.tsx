@@ -6,7 +6,7 @@ const ENLACES_PRODUCTO = [
   { href: '#caracteristicas', etiqueta: 'Características' },
   { href: '#rutas', etiqueta: 'Rutas' },
   { href: '#empresas', etiqueta: 'Para empresas' },
-  { href: '/mapa', etiqueta: 'Mapa 3D' },
+  { href: '/mapa', etiqueta: 'Consultar rutas' },
 ];
 
 const ENLACES_CUENTA = [
@@ -21,7 +21,7 @@ export function PiePagina() {
   const enlacesCuenta = user
     ? [
         { href: enlaceCuenta(user), etiqueta: etiquetaCuenta(user) },
-        { href: '/mapa', etiqueta: 'Mapa 3D' },
+        { href: '/mapa', etiqueta: 'Consultar rutas' },
       ]
     : ENLACES_CUENTA;
 

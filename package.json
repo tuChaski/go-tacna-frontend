@@ -12,6 +12,8 @@
     "test:sesion:api": "node pruebas/integracion-sesion.mjs",
     "test:rutas": "node --test pruebas/rutas.test.mjs",
     "test:crud": "node pruebas/integracion-crud.mjs",
+    "test:publico": "node --test pruebas/consulta-publica.test.mjs",
+    "test:publico:api": "node pruebas/integracion-consulta-publica.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

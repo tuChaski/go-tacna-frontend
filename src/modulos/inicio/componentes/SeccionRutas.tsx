@@ -46,10 +46,10 @@ function TarjetaRuta({ ruta, micros, indice, esRespaldo }: { ruta: RutaInicio; m
           </div>
 
           <a
-            href="/mapa"
+            href={esRespaldo ? '/mapa' : `/mapa?ruta=${ruta.id}`}
             className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#1d63ed] transition hover:gap-2.5 hover:text-blue-700"
           >
-            Ver en mapa 3D
+            Consultar ruta y micros
             <ArrowRight size={14} aria-hidden="true" />
           </a>
         </div>
@@ -75,8 +75,8 @@ export function SeccionRutas({ rutas, micros, cargando, esRespaldo }: Props) {
               Recorridos reales, lectura simple
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600">
-              Explora los trazados registrados en Go Tacna y ubica cada unidad sobre su recorrido.
-              La animación del mapa es una vista demostrativa.
+              Explora los trazados registrados en Go Tacna y consulta las unidades activas de cada ruta.
+              Puedes entrar sin crear una cuenta.
             </p>
           </div>
 
@@ -91,7 +91,7 @@ export function SeccionRutas({ rutas, micros, cargando, esRespaldo }: Props) {
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-blue-200 hover:text-[#1d63ed]"
             >
               <MapPin size={15} aria-hidden="true" />
-              Abrir mapa 3D
+              Consultar todas las rutas
             </a>
           </div>
         </div>

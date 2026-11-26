@@ -6,7 +6,7 @@ import { enlaceCuenta, etiquetaCuenta } from '../../autenticacion/enlaces-sesion
 const ENLACES = [
   { href: '#caracteristicas', etiqueta: 'Características' },
   { href: '#rutas', etiqueta: 'Rutas' },
-  { href: '/mapa', etiqueta: 'Mapa 3D' },
+  { href: '/mapa', etiqueta: 'Consultar rutas' },
   { href: '#empresas', etiqueta: 'Para empresas' },
 ];
 

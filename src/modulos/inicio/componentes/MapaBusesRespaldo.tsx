@@ -3,10 +3,11 @@ import { proyectarRutas } from '../tres/proyeccion';
 
 interface Props {
   rutas: readonly RutaInicio[];
+  etiqueta?: string;
 }
 
 /** Respaldo sin WebGL: conserva el trazado y la lectura de las rutas. */
-export function MapaBusesRespaldo({ rutas }: Props) {
+export function MapaBusesRespaldo({ rutas, etiqueta = 'Vista demostrativa' }: Props) {
   const rutasPlanas = proyectarRutas(rutas, 8);
   const aSvg = (x: number, z: number) => ({
     x: 12 + ((x + 4) / 8) * 76,
@@ -59,7 +60,7 @@ export function MapaBusesRespaldo({ rutas }: Props) {
         </p>
       )}
       <p className="absolute bottom-3 left-3 rounded-full border border-white/15 bg-[#081b3d]/80 px-2.5 py-1 text-[10px] font-medium text-blue-100/80 backdrop-blur">
-        Vista demostrativa
+        {etiqueta}
       </p>
     </div>
   );
