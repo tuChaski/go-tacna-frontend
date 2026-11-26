@@ -2,6 +2,55 @@
 
 Rama: `feature/T059-crud-admin`, creada desde `origin/develop`.
 
+## Mejora de acciones en ambos paneles — 26/11/2026
+
+Incremento en `feature/T059-mejoras-panel-admin`, desde `origin/develop`.
+
+Empresas, Rutas, Micros y Conductores comparten las acciones de listado: Ver,
+Editar, cambiar estado y Eliminar. Las operaciones de escritura piden
+confirmación y esperan la respuesta de la API. Ante un error, el diálogo
+permanece abierto con su mensaje; al terminar se actualiza el listado sin
+perder la búsqueda y los filtros. En los detalles quedan Volver al listado y
+Editar, para evitar repetir los botones.
+
+Activo y Disponible se muestran en verde; Inactivo y Sin conexión, en rojo;
+En recorrido, en azul; Mantenimiento, en ámbar. Rutas permite activar o
+desactivar. Micros y Conductores conservan sus estados operativos publicados
+por la API. Cambiar la disponibilidad de un conductor no cambia el estado de
+su cuenta. Se mantienen las restricciones del servidor por asignaciones,
+recorridos, dependencias y pertenencia a la empresa.
+
+`componentes/AccionesRegistro.tsx` concentra las acciones compartidas;
+`datos-administracion.ts` define sus etiquetas y estados. Los listados usan
+iconos con texto, buscador por recurso y botones en dos columnas en móvil.
+
+Verificación de este incremento: lint y compilación correctos, 57 pruebas
+existentes aprobadas y 36 solicitudes de integración CRUD contra la API local.
+La integración comprobó persistencia, estados, permisos entre empresas y
+bloqueos por dependencias; limpió únicamente sus propios registros ficticios.
+Estas pruebas de API no sustituyen la revisión visual de todos los diálogos.
+En navegador se revisaron los tres listados del administrador de empresa, el
+detalle de un micro con solo Volver al listado y Editar, la apertura del cambio
+de estado de un micro y su cierre con Escape devolviendo el foco, y la apertura
+y cancelación de la eliminación de un conductor. No se confirmó ninguna
+eliminación desde esa revisión visual.
+Permanece la advertencia previa del bundle del mapa de más de 500 kB.
+
+### Credenciales al registrar un conductor — 26/11/2026
+
+El alta ya enviaba correo y contraseña a `POST /conductores`, que crea la
+cuenta activa con rol conductor y su perfil dentro de una transacción. El
+formulario ahora separa Datos del conductor y Acceso del conductor, explica
+qué credenciales se deben entregar y muestra Crear conductor y cuenta. Tras
+la confirmación de la API, el detalle informa que ambos registros se crearon.
+La contraseña no se añade al detalle ni se persiste en el navegador.
+
+La prueba CRUD se amplió a 42 solicitudes: además del alta, comprueba rechazo
+de contraseña incorrecta, login correcto, identidad y rol conductor, acceso
+a su propio perfil y bloqueo del listado de empresas. Se cerró la sesión de
+prueba y se limpiaron sus registros ficticios. Lint y build correctos; revisión
+visual del apartado de acceso y su botón en el formulario conectado.
+
 ## Estado actual: integración con Laravel — 23/10/2026
 
 El panel después de `/login` consume el gateway y la base de datos reales, con backend/main `b7c5aa2` e infraestructura/develop `193b72d`. Se mantuvo el maquetado `/admin/preview` como referencia de desarrollo. Los apartados de maquetado posteriores son históricos; los avisos de «API pendiente» de esa vista no corresponden al panel autenticado.

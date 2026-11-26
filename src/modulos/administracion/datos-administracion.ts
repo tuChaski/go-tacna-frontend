@@ -39,3 +39,27 @@ export function estadoRegistro(recurso: Recurso, registro: RegistroAdministrativ
   if (recurso === 'micros') return registro.estado ?? 'inactivo';
   return registro.activo ? 'Activo' : 'Inactivo';
 }
+
+const estadosOperativos = {
+  disponible: { nombre: 'Disponible', tono: 'active' },
+  en_recorrido: { nombre: 'En recorrido', tono: 'running' },
+  mantenimiento: { nombre: 'Mantenimiento', tono: 'warning' },
+  inactivo: { nombre: 'Inactivo', tono: 'inactive' },
+  sin_conexion: { nombre: 'Sin conexión', tono: 'inactive' },
+} as const;
+
+export function presentacionEstado(recurso: Recurso, registro: RegistroAdministrativo) {
+  if (recurso === 'empresas' || recurso === 'rutas') {
+    return registro.activo ? { nombre: 'Activo', tono: 'active' } : { nombre: 'Inactivo', tono: 'inactive' };
+  }
+  const valor = estadoRegistro(recurso, registro);
+  return Object.hasOwn(estadosOperativos, valor)
+    ? estadosOperativos[valor as keyof typeof estadosOperativos]
+    : { nombre: 'Sin información', tono: 'neutral' };
+}
+
+export function opcionesEstadoOperativo(recurso: Recurso): { valor: string; nombre: string }[] {
+  const valores = recurso === 'micros' ? ['disponible', 'en_recorrido', 'mantenimiento', 'inactivo']
+    : recurso === 'conductores' ? ['disponible', 'en_recorrido', 'sin_conexion'] : [];
+  return valores.map(valor => ({ valor, nombre: estadosOperativos[valor as keyof typeof estadosOperativos].nombre }));
+}
