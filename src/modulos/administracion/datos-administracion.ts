@@ -12,7 +12,7 @@ export interface RegistroAdministrativo {
   id: number;
   empresa_id?: number;
   razon_social?: string; ruc?: string; telefono?: string; direccion?: string; activo?: boolean;
-  nombre_ruta?: string; trazado_ruta?: TrazadoGeoJson | null;
+  nombre_ruta?: string; trazado_ruta?: TrazadoGeoJson | null; micros_count?: number;
   licencia_conducir?: string; estado_operativo?: string; usuario_id?: number; usuario?: CuentaAdministrativa;
   micro_actual?: { id: number; placa: string } | null;
   placa?: string; capacidad_pasajeros?: number; estado?: string;

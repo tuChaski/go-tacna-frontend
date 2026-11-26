@@ -191,3 +191,10 @@ test('los mensajes globales distinguen permiso, validación, demora y conexión'
   assert.match(mensajeErrorHttp(new AxiosError('', 'ERR_NETWORK')), /conexión/);
   for (const estado of [401,403,404,409,422,429,500]) assert.doesNotMatch(mensajeErrorHttp(error(estado)), /crudo|privado/);
 });
+test('un 409 muestra el motivo de negocio del servidor; otros estados no exponen su mensaje', () => {
+  const conMotivo = (estado, message) => new AxiosError('', '', undefined, undefined, { status: estado, data: { success: false, message } });
+  assert.equal(mensajeErrorHttp(conMotivo(409, ' No puedes eliminar una ruta que tiene micros asignados. ')), 'No puedes eliminar una ruta que tiene micros asignados.');
+  assert.match(mensajeErrorHttp(conMotivo(409, '')), /registros relacionados/);
+  assert.match(mensajeErrorHttp(conMotivo(409, { detalle: 'objeto' })), /registros relacionados/);
+  for (const estado of [403, 404, 422, 500]) assert.doesNotMatch(mensajeErrorHttp(conMotivo(estado, 'Mensaje crudo privado')), /crudo|privado/);
+});

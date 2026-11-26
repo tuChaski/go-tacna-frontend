@@ -10,18 +10,20 @@ import { EditorTrazadoRuta } from '../rutas/EditorTrazadoRuta';
 import { crearGeoJson, validarTrazado } from '../rutas/trazado-ruta';
 import type { PuntoRuta } from '../rutas/trazado-ruta';
 import { errorAdministracion } from '../../../services/administracion';
+import { MENSAJE_DNI, MENSAJE_TELEFONO, PATRON_DNI, PATRON_TELEFONO } from '../../autenticacion/formulario-acceso';
 
 interface Campo {
   clave: string; etiqueta: string; tipo?: 'email' | 'tel' | 'password' | 'number';
   limite?: number; minimo?: number; maximo?: number; opcional?: boolean;
   opciones?: { valor: string; nombre: string; deshabilitada?: boolean }[];
   bloqueado?: boolean;
+  patron?: RegExp; mensajePatron?: string; modoEntrada?: 'numeric' | 'tel';
 }
 const camposPersona: Campo[] = [
-  { clave: 'dni', etiqueta: 'DNI', limite: 20 },
+  { clave: 'dni', etiqueta: 'DNI', limite: 8, patron: PATRON_DNI, mensajePatron: MENSAJE_DNI, modoEntrada: 'numeric' },
   { clave: 'nombre', etiqueta: 'Nombres', limite: 120 },
   { clave: 'apellido', etiqueta: 'Apellidos', limite: 120 },
-  { clave: 'telefono', etiqueta: 'Teléfono', tipo: 'tel', limite: 30 },
+  { clave: 'telefono', etiqueta: 'Teléfono', tipo: 'tel', limite: 9, patron: PATRON_TELEFONO, mensajePatron: MENSAJE_TELEFONO, modoEntrada: 'tel' },
   { clave: 'correo', etiqueta: 'Correo de acceso', tipo: 'email', limite: 150 },
   { clave: 'password', etiqueta: 'Contraseña inicial', tipo: 'password', minimo: 8 },
 ];
@@ -99,6 +101,7 @@ export function FormularioRegistro({ recurso, registro, cuenta, rutas = [], cond
     for (const campo of campos) {
       const valor = datos[campo.clave] ?? '';
       if (!campo.opcional && !valor.trim()) siguientes[campo.clave] = 'Completa este campo.';
+      else if (valor && campo.patron && !campo.patron.test(valor.trim())) siguientes[campo.clave] = campo.mensajePatron ?? 'Revisa el formato de este campo.';
       else if (valor && campo.limite && [...valor.trim()].length > campo.limite) siguientes[campo.clave] = `Máximo ${campo.limite} caracteres.`;
       else if (valor && campo.tipo === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor.trim())) siguientes[campo.clave] = 'Ingresa un correo válido.';
       else if (valor && campo.tipo === 'password' && (!valor.trim() || [...valor].length < 8)) siguientes[campo.clave] = 'Utiliza al menos 8 caracteres y evita una contraseña de solo espacios.';
@@ -156,10 +159,10 @@ export function FormularioRegistro({ recurso, registro, cuenta, rutas = [], cond
           aria-invalid={Boolean(errores[campo.clave])} aria-describedby={`error-${campo.clave}`}>
           {campo.opciones.map(opcion => <option key={opcion.valor} value={opcion.valor} disabled={opcion.deshabilitada}>{opcion.nombre}</option>)}
         </select> : <input id={`registro-${campo.clave}`} type={campo.tipo === 'password' && mostrar ? 'text' : campo.tipo ?? 'text'}
-          required={!campo.opcional} value={datos[campo.clave] ?? ''} maxLength={campo.limite} min={campo.minimo} max={campo.maximo}
+          required={!campo.opcional} value={datos[campo.clave] ?? ''} maxLength={campo.limite} min={campo.minimo} max={campo.maximo} inputMode={campo.modoEntrada}
           autoComplete={campo.tipo === 'password' ? 'new-password' : 'off'} aria-invalid={Boolean(errores[campo.clave])} aria-describedby={`error-${campo.clave}`}
           onChange={evento => establecerDatos(actuales => ({ ...actuales, [campo.clave]: evento.target.value }))} />}
-        <p id={`error-${campo.clave}`} className="admin-field-error">{errores[campo.clave]}</p>
+        <p id={`error-${campo.clave}`} className="admin-field-error" role={errores[campo.clave] ? 'alert' : undefined}>{errores[campo.clave]}</p>
       </div>)}
         {grupo.campos.some(campo => campo.tipo === 'password') && <label className="admin-mostrar-clave"><input type="checkbox" checked={mostrar} onChange={evento => establecerMostrar(evento.target.checked)} /> Mostrar contraseña</label>}
       </fieldset>)}

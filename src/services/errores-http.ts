@@ -1,4 +1,5 @@
-/** Mensajes compartidos; las respuestas crudas no se muestran en la interfaz. */
+/** Mensajes compartidos; las respuestas crudas no se muestran en la interfaz,
+ * salvo el motivo de negocio de un 409 (p. ej. «tiene micros asignados»). */
 import axios from 'axios';
 import { ErrorSesion } from './sesion-http.ts';
 
@@ -8,6 +9,10 @@ export function mensajeErrorHttp(error: unknown): string {
   if (!error.response) return ['ECONNABORTED', 'ETIMEDOUT'].includes(error.code ?? '')
     ? 'El servidor está demorando demasiado. Revisa el resultado antes de repetir un guardado.'
     : 'No se pudo confirmar la operación. Revisa la conexión y el resultado antes de repetir un guardado.';
+  if (error.response.status === 409) {
+    const motivo: unknown = (error.response.data as { message?: unknown } | undefined)?.message;
+    if (typeof motivo === 'string' && motivo.trim()) return motivo.trim();
+  }
   const mensajes: Record<number, string> = {
     401: 'Tu sesión terminó. Inicia sesión nuevamente.',
     403: 'Tu cuenta no tiene permiso para esta operación o empresa.',
