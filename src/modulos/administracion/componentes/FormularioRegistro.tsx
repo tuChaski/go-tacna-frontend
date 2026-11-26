@@ -43,8 +43,9 @@ export function FormularioRegistro({ recurso, registro, cuenta, rutas = [], cond
   else if (recurso === 'cuenta') campos = camposPersona.map(campo => campo.clave === 'password' && editando
     ? { ...campo, etiqueta: 'Nueva contraseña (opcional)', opcional: true } : campo);
   else if (recurso === 'conductores') campos = [
-    ...(!editando ? camposPersona : []),
+    ...(!editando ? camposPersona.filter(campo => campo.clave !== 'correo' && campo.clave !== 'password') : []),
     { clave: 'licencia_conducir', etiqueta: 'Licencia de conducir', limite: 120 },
+    ...(!editando ? camposPersona.filter(campo => campo.clave === 'correo' || campo.clave === 'password') : []),
   ];
   else if (recurso === 'rutas') campos = [{ clave: 'nombre_ruta', etiqueta: 'Nombre de la ruta', limite: 180 }];
   else campos = [
@@ -63,6 +64,12 @@ export function FormularioRegistro({ recurso, registro, cuenta, rutas = [], cond
       }),
     ] },
   ];
+
+  const gruposCampos = recurso === 'conductores' && !editando
+    ? [
+      { titulo: 'Datos del conductor', ayuda: '', campos: campos.filter(campo => campo.clave !== 'correo' && campo.clave !== 'password') },
+      { titulo: 'Acceso del conductor', ayuda: 'El conductor iniciará sesión con este correo y esta contraseña. Entrégale ambos datos después de guardar. La contraseña debe tener al menos 8 caracteres.', campos: campos.filter(campo => campo.clave === 'correo' || campo.clave === 'password') },
+    ] : [{ titulo: '', ayuda: '', campos }];
 
   // Solo campos de esta operación; no copiar contraseñas ni propiedades extra del recurso.
   const [datos, establecerDatos] = useState<Record<string, string>>(() => Object.fromEntries(campos.map(campo => {
@@ -136,9 +143,13 @@ export function FormularioRegistro({ recurso, registro, cuenta, rutas = [], cond
   return <form className="admin-card admin-form" ref={formulario} onSubmit={evento => void enviar(evento)} noValidate>
     {recurso === 'empresas' && !editando && <p className="admin-info-note">Primero guarda la empresa. En su detalle podrás crear la cuenta de su administrador.</p>}
     {recurso === 'cuenta' && <p className="admin-info-note">Acceso de administrador de empresa. Entrega las credenciales a la persona responsable.{editando ? ' Deja la nueva contraseña vacía para conservar la actual.' : ''}</p>}
+    {recurso === 'conductores' && !editando && <p className="admin-info-note">Al guardar se crearán el perfil del conductor y su cuenta de acceso a la aplicación.</p>}
     {recurso === 'conductores' && editando && <div className="admin-info-note"><p>{registro?.usuario?.nombre} {registro?.usuario?.apellido} · {registro?.usuario?.correo}<br />La API permite editar la licencia. Los cambios de datos personales y contraseña requieren ampliar sus permisos.</p></div>}
     <fieldset className="admin-campos-conectados" disabled={ocupado}>
-      {campos.map(campo => <div className="admin-field" key={campo.clave}>
+      {gruposCampos.map(grupo => <fieldset className="admin-field-group" key={grupo.titulo}>
+        {grupo.titulo && <legend>{grupo.titulo}</legend>}
+        {grupo.ayuda && <p className="admin-small admin-muted">{grupo.ayuda}</p>}
+        {grupo.campos.map(campo => <div className="admin-field" key={campo.clave}>
         <label htmlFor={`registro-${campo.clave}`}>{campo.etiqueta}{campo.opcional && campo.tipo !== 'password' ? ' (opcional)' : ''}</label>
         {campo.opciones ? <select id={`registro-${campo.clave}`} value={datos[campo.clave] ?? ''} disabled={campo.bloqueado}
           onChange={evento => establecerDatos(actuales => ({ ...actuales, [campo.clave]: evento.target.value }))}
@@ -150,12 +161,13 @@ export function FormularioRegistro({ recurso, registro, cuenta, rutas = [], cond
           onChange={evento => establecerDatos(actuales => ({ ...actuales, [campo.clave]: evento.target.value }))} />}
         <p id={`error-${campo.clave}`} className="admin-field-error">{errores[campo.clave]}</p>
       </div>)}
-      {campos.some(campo => campo.tipo === 'password') && <label className="admin-mostrar-clave"><input type="checkbox" checked={mostrar} onChange={evento => establecerMostrar(evento.target.checked)} /> Mostrar contraseña</label>}
+        {grupo.campos.some(campo => campo.tipo === 'password') && <label className="admin-mostrar-clave"><input type="checkbox" checked={mostrar} onChange={evento => establecerMostrar(evento.target.checked)} /> Mostrar contraseña</label>}
+      </fieldset>)}
       {recurso === 'rutas' && <EditorTrazadoRuta puntos={puntos} alCambiar={establecerPuntos} error={errores.trazado_ruta} />}
       {recurso === 'micros' && registro?.estado === 'en_recorrido' && <p className="admin-pending">Finaliza el recorrido antes de cambiar la ruta o el conductor.</p>}
     </fieldset>
     {mensaje && <p role="alert" className="admin-error-servicio">{mensaje}</p>}
     <div className="admin-form-actions"><Link className="admin-button admin-outline" to={cancelar} aria-disabled={ocupado}
-      onClick={evento => { if (ocupado) evento.preventDefault(); }}>Cancelar</Link><button className="admin-button" type="submit" disabled={ocupado}>{ocupado ? 'Guardando…' : 'Guardar cambios'}</button></div>
+      onClick={evento => { if (ocupado) evento.preventDefault(); }}>Cancelar</Link><button className="admin-button" type="submit" disabled={ocupado}>{ocupado ? 'Guardando…' : recurso === 'conductores' && !editando ? 'Crear conductor y cuenta' : 'Guardar cambios'}</button></div>
   </form>;
 }

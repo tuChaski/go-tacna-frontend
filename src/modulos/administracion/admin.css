@@ -101,6 +101,13 @@
 .admin-dialog[open] > * { margin: 0; }
 .admin-status-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 24px; padding: 4px 10px; font-size: 12px; line-height: 20px; font-weight: 600; color: #047857; background: #ecfdf5; }
 .admin-status-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.admin-status-active { color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; }
+.admin-status-inactive { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; }
+.admin-positive { background: #047857; border-color: #047857; }
+.admin-status-running { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
+.admin-status-warning { color: #92400e; background: #fffbeb; border-color: #fde68a; }
+.admin-status-neutral { color: #475569; background: #f1f5f9; border-color: #cbd5e1; }
+.admin-positive:hover { background: #065f46; border-color: #065f46; }
 .admin-delete-outline { background: white; border-color: #fecaca; color: #b91c1c; }
 .admin-delete-outline:hover { background: #fef2f2; }
 .admin-delete-section { display: grid; gap: 12px; justify-items: start; border-top: 1px solid var(--admin-border); margin-top: 24px; padding-top: 24px; }
@@ -170,6 +177,9 @@
    de servicio, formularios accesibles y separación entre cuentas y empresas. */
 .admin-preview .admin-shell { min-height: 100svh; }
 .admin-campos-conectados { display: grid; gap: 20px; min-width: 0; border: 0; margin: 0; padding: 0; }
+.admin-field-group { display: grid; gap: 20px; min-width: 0; border: 0; margin: 0; padding: 0; }
+.admin-field-group legend { padding: 0 0 16px; font-size: 20px; font-weight: 600; }
+.admin-field-group + .admin-field-group { border-top: 1px solid var(--admin-border); padding-top: 24px; }
 .admin-error-servicio { padding: 16px; border: 1px solid #fecaca; border-radius: 10px; background: #fef2f2; color: #991b1b; }
 .admin-mostrar-clave { display: flex; align-items: center; gap: 12px; font-size: 14px; }
 .admin-mostrar-clave input { width: 18px; height: 18px; }
@@ -213,4 +223,24 @@
   .admin-form-actions { flex-wrap: wrap; }
   .admin-form-actions > * { flex-basis: 160px; }
   .admin-context > .admin-button, .admin-home-card > .admin-button { min-width: 0; max-width: 100%; }
+}
+
+/* Listados de ambos administradores: las cuatro acciones caben en la fila
+   y conservan texto e icono; en móvil se mantiene la cuadrícula de dos columnas. */
+.admin-management-table th:first-child { width: 34%; }
+.admin-management-table th:nth-child(2) { width: 16%; }
+.admin-management-table th:last-child, .admin-management-table td:last-child { padding-right: 0; }
+.admin-management-table td { padding-top: 20px; padding-bottom: 20px; }
+.admin-record-title { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.admin-management-table .admin-record-key { margin-top: 4px; font-size: 13px; }
+.admin-management-table .admin-status-badge { white-space: nowrap; padding: 5px 11px; }
+.admin-management-table .admin-record-actions { gap: 8px; }
+.admin-record-toggle { color: #475569; background: white; border-color: #cbd5e1; }
+.admin-record-toggle:hover { color: #0f172a; background: #f1f5f9; border-color: #94a3b8; }
+.admin-record-activate { color: #047857; border-color: #a7f3d0; }
+.admin-record-activate:hover { color: #065f46; background: #ecfdf5; border-color: #6ee7b7; }
+@media (max-width: 700px) {
+  .admin-management-table td { padding-top: 0; padding-bottom: 0; }
+  .admin-management-table tbody tr { padding-bottom: 20px; }
+  .admin-management-table .admin-record-actions .admin-button { min-height: 44px; }
 }

@@ -11,6 +11,7 @@ const sufijo = String(Date.now());
 const claveFicticia = `Prueba-${sufijo}`;
 let token = '';
 let tokenEmpresa = '';
+let tokenConductor = '';
 let verificaciones = 0;
 const creados = { empresas: [], rutas: [], conductores: [], micros: [], usuarios: [], perfiles: [] };
 async function solicitar(metodo, ruta, datos, esperado = 200, sesion = token) {
@@ -50,6 +51,20 @@ try {
   await solicitar('POST', '/rutas', { empresa_id: ajena.id, nombre_ruta: 'Sin permiso', trazado_ruta: geometria }, 403, tokenEmpresa);
   const conductor = (await solicitar('POST', '/conductores', { empresa_id: empresa.id, dni: `C${sufijo}`, nombre: 'Conductor', apellido: 'Prueba', correo: `conductor-${sufijo}@example.com`, telefono: '000000000', password: claveFicticia, licencia_conducir: 'LICENCIA-PRUEBA' }, 201, tokenEmpresa)).data;
   creados.conductores.push(conductor.id); creados.usuarios.push(conductor.usuario_id);
+  // Las credenciales ingresadas durante el alta deben autenticar una cuenta de
+  // conductor con su perfil, sin conceder acceso a la administración de empresas.
+  await solicitar('POST', '/auth/login', { correo: `conductor-${sufijo}@example.com`, password: `${claveFicticia}-incorrecta` }, 401, '');
+  tokenConductor = (await solicitar('POST', '/auth/login', { correo: `conductor-${sufijo}@example.com`, password: claveFicticia }, 200, '')).data.token;
+  const identidadConductor = (await solicitar('GET', '/auth/me', undefined, 200, tokenConductor)).data;
+  assert.equal(identidadConductor.id, conductor.usuario_id);
+  assert.equal(identidadConductor.rol, 'conductor');
+  assert.equal(identidadConductor.activo, true);
+  const perfilConductor = (await solicitar('GET', '/conductor/perfil', undefined, 200, tokenConductor)).data;
+  assert.equal(perfilConductor.id, conductor.id);
+  assert.equal(perfilConductor.empresa_id, empresa.id);
+  await solicitar('GET', '/empresas', undefined, 403, tokenConductor);
+  await solicitar('POST', '/auth/logout', undefined, 200, tokenConductor);
+  tokenConductor = '';
   await solicitar('PUT', `/conductores/${conductor.id}`, { licencia_conducir: 'LICENCIA-EDITADA' }, 200, tokenEmpresa);
   assert.equal((await solicitar('GET', `/conductores/${conductor.id}`, undefined, 200, tokenEmpresa)).data.licencia_conducir, 'LICENCIA-EDITADA');
   const micro = (await solicitar('POST', '/micros', { empresa_id: empresa.id, placa: `P${sufijo}`, capacidad_pasajeros: 24, ruta_id: ruta.id, conductor_actual_id: conductor.id }, 201, tokenEmpresa)).data;
@@ -68,8 +83,9 @@ try {
   await solicitar('POST', '/auth/logout', undefined, 200, tokenEmpresa);
   await solicitar('GET', '/conductores', undefined, 401, tokenEmpresa);
   tokenEmpresa = '';
-  console.log(`${verificaciones} solicitudes verificadas: CRUD, persistencia, geometría, estados, permisos y dependencias.`);
+  console.log(`${verificaciones} solicitudes verificadas: CRUD, credenciales del conductor, persistencia, geometría, estados, permisos y dependencias.`);
 } finally {
+  if (tokenConductor) await solicitar('POST', '/auth/logout', undefined, 200, tokenConductor);
   // Orden inverso de dependencias. Nunca enumera ni elimina registros ajenos.
   for (const id of creados.micros.reverse()) { await solicitar('PATCH', `/micros/${id}/estado`, { estado: 'disponible' }); await solicitar('DELETE', `/micros/${id}`); }
   for (const id of creados.conductores.reverse()) await solicitar('DELETE', `/conductores/${id}`);

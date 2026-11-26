@@ -4,9 +4,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { errorAdministracion } from '../../../services/administracion';
 
-export function DialogoOperacion({ titulo, descripcion, estados, estadoInicial, alConfirmar, alCerrar }: {
+export function DialogoOperacion({ titulo, descripcion, estados, estadoInicial, alConfirmar, alCerrar, textoConfirmar, tonoConfirmar = 'peligro' }: {
   titulo: string; descripcion: string; estados?: { valor: string; nombre: string }[];
   estadoInicial: string; alConfirmar: (estado: string) => Promise<void>; alCerrar: () => void;
+  textoConfirmar?: string; tonoConfirmar?: 'normal' | 'peligro' | 'positivo';
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const bloqueo = useRef(false);
@@ -33,6 +34,6 @@ export function DialogoOperacion({ titulo, descripcion, estados, estadoInicial, 
       onChange={evento => establecerEstado(evento.target.value)}>{estados.map(opcion => <option key={opcion.valor} value={opcion.valor}>{opcion.nombre}</option>)}</select></div>}
     {error && <p role="alert" className="admin-error-servicio">{error}</p>}
     <div className="admin-form-actions"><button type="button" data-cancelar className="admin-button admin-outline" disabled={ocupado} onClick={alCerrar}>Cancelar</button>
-      <button type="button" className="admin-button admin-danger" disabled={ocupado} onClick={() => void confirmar()}>{ocupado ? 'Procesando…' : estados ? 'Confirmar estado' : 'Eliminar definitivamente'}</button></div>
+      <button type="button" className={`admin-button${tonoConfirmar === 'peligro' ? ' admin-danger' : tonoConfirmar === 'positivo' ? ' admin-positive' : ''}`} disabled={ocupado} onClick={() => void confirmar()}>{ocupado ? 'Procesando…' : textoConfirmar ?? (estados ? 'Confirmar estado' : 'Eliminar definitivamente')}</button></div>
   </dialog>;
 }
