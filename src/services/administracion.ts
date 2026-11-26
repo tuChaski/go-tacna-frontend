@@ -4,6 +4,7 @@
  */
 import axios from 'axios';
 import api from './api';
+import { mensajeErrorHttp } from './errores-http';
 import type { CuentaAdministrativa, PaginaRegistros, Recurso, RegistroAdministrativo } from '../modulos/administracion/datos-administracion';
 
 export class ErrorAdministracion extends Error {
@@ -15,22 +16,13 @@ export class ErrorAdministracion extends Error {
 }
 export function errorAdministracion(error: unknown): ErrorAdministracion {
   if (error instanceof ErrorAdministracion) return error;
-  if (!axios.isAxiosError(error)) return new ErrorAdministracion('La respuesta del servicio no tiene el formato esperado.');
+  if (!axios.isAxiosError(error)) return new ErrorAdministracion(mensajeErrorHttp(error));
   const estado = error.response?.status;
-  const mensajes: Record<number, string> = {
-    401: 'La sesión venció. Inicia sesión nuevamente.',
-    403: 'Tu cuenta no tiene permiso para esta operación o empresa.',
-    404: 'El registro ya no existe o no está disponible.',
-    409: 'No se puede completar por registros relacionados o una asignación ocupada. Revisa sus dependencias.',
-    422: 'Revisa los campos indicados. Puede haber datos inválidos, duplicados o asignaciones no permitidas.',
-    429: 'Demasiadas solicitudes. Espera un momento y vuelve a intentar.',
-  };
   const campos: Record<string, string> = {};
   if (estado === 422 && error.response?.data?.errors && typeof error.response.data.errors === 'object') {
     for (const clave of Object.keys(error.response.data.errors)) campos[clave] = 'Revisa este valor: puede ser inválido, estar duplicado o no estar disponible.';
   }
-  return new ErrorAdministracion(estado ? mensajes[estado] ?? 'El servidor no pudo completar la operación. Revisa el listado antes de repetir un guardado.'
-    : 'No se pudo confirmar la operación. Revisa la conexión y consulta el listado antes de repetir un guardado.', campos, estado);
+  return new ErrorAdministracion(mensajeErrorHttp(error), campos, estado);
 }
 
 function comprobarRegistro(registro: RegistroAdministrativo): RegistroAdministrativo {

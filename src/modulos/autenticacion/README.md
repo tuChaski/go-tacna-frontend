@@ -1,5 +1,7 @@
 # T056 — Autenticación y registro web
 
+Actualización T102: la renovación preventiva y los errores HTTP compartidos se describen al final de este documento. Las referencias a ausencia de refresh en la evidencia de T056 corresponden a aquel incremento histórico.
+
 Actualización T059 (23/10/2026): los administradores ahora acceden al panel real de Empresas o de Rutas/Conductores/Micros. La pantalla mínima descrita en la evidencia de T056 corresponde a ese incremento histórico. Ver [integración administrativa](../administracion/README.md).
 
 Implementación en `feature/T056-autenticacion-web`. Contratos revisados: backend/main `be1c4eb` y docs/develop `e35b60f`. Conexión comprobada nuevamente con backend/main `b7c5aa2` e infraestructura/develop `193b72d`, sobre la base frontend/develop `7e33324`.
@@ -113,3 +115,94 @@ docker compose exec -T -e APP_ENV=testing -e DB_CONNECTION=sqlite -e DB_DATABASE
 Estas verificaciones no son una auditoría completa de seguridad ni pruebas con usuarios. No se declara conectado el CRUD T059 ni verificado el refresco T102. Antes del cierre administrativo de #92, Alex y el equipo deben revisar este incremento y su PR hacia develop.
 
 También se añadió el enlace «Iniciar sesión» en la cabecera de la landing y se verificó su navegación hasta el acceso. El resto de la landing mantiene su comportamiento existente.
+
+## T102 — Renovación de sesión y errores HTTP
+
+### Qué cambia
+
+La web renueva el token antes de que venza. La comprobación se realiza antes de enviar consultas y mediante un temporizador mientras la cuenta está abierta. También se comprueba al volver a la pestaña o recuperar conexión. La renovación actualiza el token sin desmontar por sí misma el formulario de esa pestaña.
+
+Se utiliza `exp` del JWT únicamente para programar el intento, con hasta un minuto de anticipación. Para tokens de duración corta se usa un margen del 20 % de su duración. La identidad, los roles y las empresas siguen siendo responsabilidad del servidor.
+
+En la API revisada, `POST /auth/refresh` devuelve `{ success: true, data: { token, tipo: 'bearer' } }`, sin un perfil. La renovación invalida el token anterior. La ruta está dentro de `auth:api`, por lo que rechaza un token que ya venció. Se comprueba ese comportamiento contra backend/main `6d7c4a9`; esta entrega no modifica el backend.
+
+- Las consultas simultáneas de una pestaña comparten la misma renovación. Cuando el navegador ofrece Web Locks, también se coordina el intento entre pestañas del mismo origen.
+- Una respuesta antigua no reemplaza una sesión nueva. Cerrar sesión cancela la renovación pendiente y limpia el dispositivo antes de esperar la confirmación remota.
+- Los rechazos definitivos de autenticación llevan al login con un aviso. Un error de conexión, timeout o error 500 durante refresh conserva el token para permitir recuperación mientras siga vigente.
+- Los errores 403, 422, 429 y de servidor se distinguen de una sesión vencida. Los campos inválidos siguen señalándose en sus formularios.
+- Si una lectura obtiene 401 de un token que acaba de rotar, puede repetirse una vez con el token actual. Las escrituras no se repiten automáticamente, tampoco ante una respuesta perdida.
+- Login y registro no intentan renovar ante credenciales incorrectas. Refresh y logout usan un cliente separado para evitar bucles.
+
+### Archivos del incremento
+
+| Archivo | Responsabilidad |
+|---|---|
+| `src/services/sesion-http.ts` | Interceptores, coordinación, vencimiento y protección frente a respuestas antiguas |
+| `src/services/api.ts` | Conexión del cliente con almacenamiento, eventos, Web Locks y refresh/logout |
+| `src/services/adaptador-autenticacion.ts` | Interpretación separada de la respuesta de renovación |
+| `src/services/errores-http.ts` | Mensajes HTTP compartidos, sin mostrar respuestas crudas |
+| `src/context/AuthContext.tsx` | Sincronización del token, temporizador y aviso de fin de sesión |
+| `src/services/authService.ts` | Cierre local inmediato y solicitud de invalidación remota |
+| `src/modulos/autenticacion/RutasAcceso.tsx` | Aviso al volver al login por fin de sesión |
+| `src/services/administracion.ts` y `errores-acceso.ts` | Uso de mensajes compartidos conservando las validaciones de cada formulario |
+
+### Pruebas ejecutadas
+
+| Verificación | Resultado |
+|---|---|
+| `npm run test:sesion` | 31 pruebas pasan: renovación, concurrencia, rechazo, red, cancelación, rotación, cierre y respuestas antiguas |
+| `npm run test:auth` | Las 18 pruebas existentes pasan |
+| `npm run test:rutas` | Las 8 pruebas existentes pasan |
+| `npm run lint` | Pasa |
+| `npm run build` | Pasa; continúa el aviso existente del tamaño del paquete del mapa 3D |
+| API local, administrador general | 13 verificaciones pasan; una renovación para tres consultas simultáneas |
+| API local, administrador de empresa | 13 verificaciones pasan; se conservan identidad, rol y vínculos de empresas |
+
+Las 57 pruebas de Node usan respuestas HTTP simuladas y reloj controlado. Las 26 verificaciones de integración sí consultan el gateway y el backend locales: comprueban perfil, catálogos, renovación, invalidación del token anterior, permisos 403, validación 422, acceso incorrecto 401, logout y rechazo del JWT vencido. Son comprobaciones distintas; no se presentan las respuestas simuladas como pruebas contra el servidor.
+
+Para repetir las pruebas automáticas, desde la raíz del frontend:
+
+```powershell
+npm run test:sesion
+npm run test:auth
+npm run test:rutas
+npm run lint
+npm run build
+```
+
+Para repetir la integración, con la API Docker local saludable y las cuentas de demostración disponibles:
+
+```powershell
+.\pruebas\ejecutar-sesion-local.ps1
+```
+
+El script prepara tokens temporales vigentes, próximos a vencer y vencidos para las dos cuentas administrativas de demostración. Modifica el reloj de Carbon solo dentro del proceso PHP que emite esos tokens; no cambia el reloj del sistema, la duración configurada de las sesiones ni las cuentas. Solo admite un entorno Laravel `local` o `testing` y una API en loopback. No ejecuta migraciones, seeders ni altas/bajas de registros. Al terminar, solicita el cierre de los tokens de prueba y restaura las variables de entorno del proceso. No imprime tokens ni contraseñas.
+
+`npm run test:sesion:api` permite ejecutar la parte Node con JWT temporales ya preparados en `GOTACNA_TOKEN_VIGENTE`, `GOTACNA_TOKEN_CORTO`, `GOTACNA_TOKEN_VENCIDO` y el rol esperado en `GOTACNA_ROL_PRUEBA`; la preparación normal se realiza con el script de PowerShell anterior.
+
+### Validación visual en Chrome
+
+Se revisa la aplicación en `http://localhost:5173` con el gateway y el backend locales. Se utilizan las cuentas administrativas de demostración.
+
+| Caso | Resultado observado |
+|---|---|
+| Administrador general: acceso y Empresas | Las capturas aportadas por Alex muestran el listado de empresas; la revisión en Chrome confirma el panel cargado |
+| Cierre de la sesión general | Aparece la espera de cierre y luego el login con el mensaje «Sesión cerrada» |
+| Administrador de empresa | El acceso dirige a Rutas con Transportes Tacna S.A.C. seleccionada; también se abren Micros y Conductores |
+| Recarga del panel de empresa | Se recupera la cuenta y se conserva el contexto de empresa |
+| Renovación con un formulario abierto | El campo Placa conserva `T102-FORM` mientras cambia el token; la consulta de perfil con el token nuevo devuelve 200 |
+| Cierre con dos pestañas | La segunda pestaña muestra «Sesión cerrada» y la primera también regresa al login |
+
+Para comprobar el temporizador sin esperar una hora, se emite desde el backend local un JWT legítimo de la cuenta de demostración de empresa al que le quedan aproximadamente dos minutos. Se instala como credencial temporal en esa pestaña mediante las herramientas de desarrollo. El temporizador de la aplicación realiza la renovación; la comprobación posterior consulta el perfil directamente con el token nuevo, sin provocar otra renovación a través del interceptor.
+
+La comprobación devuelve `renovada: true`, `perfil: 200` y `placa: "T102-FORM"`. El formulario no se envía y el micro de prueba no se guarda. Después se descarta el formulario, se retiran las variables temporales del navegador y se cierran las credenciales de prueba. No se modifica la duración configurada de las sesiones, el reloj del sistema ni el código del backend.
+
+El rechazo de tokens vencidos se comprueba con pruebas automáticas y contra la API; los fallos de conexión se simulan en las pruebas automáticas. No se fuerza visualmente una desconexión ni una suspensión prolongada. Tampoco se presenta esta prueba corta como una observación de una hora de uso continuo.
+
+### Límites de esta entrega
+
+Si el equipo se suspende o pierde conexión hasta después del vencimiento, el backend actual exige iniciar sesión otra vez; la ventana de refresh de la biblioteca no evita el bloqueo de `auth:api`. La programación depende del reloj del dispositivo y de la ejecución de JavaScript del navegador. Sin Web Locks la coordinación es por pestaña. Se comprueba visualmente el cierre compartido, pero no se fuerza en el navegador una renovación simultánea desde dos pestañas; la coordinación de renovación tiene la cobertura automatizada descrita arriba.
+
+La implementación, las pruebas automáticas, la integración y las comprobaciones visuales descritas quedan listas para revisión en `feature/T102-refresco-sesion`. El PR hacia `develop` y la aprobación del equipo siguen pendientes; no se declara T102 cerrada.
+
+Referencias técnicas: [interceptores de Axios](https://axios-http.com/docs/interceptors), [cancelación con AbortController](https://axios-http.com/docs/cancellation), [controlador de autenticación del backend revisado](https://github.com/tuChaski/go-tacna-backend/blob/6d7c4a95def2ff5075ceae553549322d0838a173/gotacna-backend-core/app/Http/Controllers/Api/V1/AuthController.php) y [rutas del backend](https://github.com/tuChaski/go-tacna-backend/blob/6d7c4a95def2ff5075ceae553549322d0838a173/gotacna-backend-core/routes/api.php).

@@ -79,3 +79,12 @@ export function adaptarSesion(respuesta: unknown): AuthResponse {
 export function adaptarPerfil(respuesta: unknown): User {
   return adaptarUsuario(datosDeRespuesta(respuesta));
 }
+
+/** Refresh solo devuelve { token, tipo }; no contiene un perfil de usuario. */
+export function adaptarRenovacion(respuesta: unknown): string {
+  const datos = datosDeRespuesta(respuesta);
+  if (typeof datos.token !== 'string' || !datos.token.trim() || datos.tipo !== 'bearer') {
+    throw new Error('El servidor no devolvió un token de renovación compatible.');
+  }
+  return datos.token;
+}

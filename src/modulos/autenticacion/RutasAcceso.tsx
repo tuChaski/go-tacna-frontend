@@ -8,7 +8,7 @@ import { destinoSesion } from './destino-sesion';
 import { PanelAdministracion } from '../administracion/PanelAdministracion';
 
 function Cuenta({ destino }: { destino: '/admin' | '/admin/empresa' | '/cuenta' }) {
-  const { user, isLoading, sessionError, retrySession, logout } = useAuth();
+  const { user, isLoading, sessionError, sessionNotice, retrySession, logout } = useAuth();
   const [saliendo, establecerSaliendo] = useState(false);
   const bloqueo = useRef(false);
   const navegar = useNavigate();
@@ -24,7 +24,7 @@ function Cuenta({ destino }: { destino: '/admin' | '/admin/empresa' | '/cuenta' 
   if (!user && saliendo) return <main className="acceso-sesion"><p role="status">Cerrando sesión…</p></main>;
   if (sessionError) return <main className="acceso-sesion"><h1>No pudimos comprobar tu sesión</h1><p role="alert">{sessionError}</p>
     <button className="acceso-ingresar" onClick={retrySession}>Reintentar</button><button disabled={saliendo} onClick={() => void salir()}>Salir de este dispositivo</button></main>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace state={sessionNotice ? { aviso: sessionNotice } : undefined} />;
   if (destinoSesion(user.rol) !== destino) return <Navigate to={destinoSesion(user.rol)} replace />;
   // Se monta únicamente tras verificar sesión y rol, conservando el cierre de T056.
   if (user.rol === 'admin_general' || user.rol === 'admin_empresa') return <PanelAdministracion usuario={user} saliendo={saliendo} alSalir={() => void salir()} />;

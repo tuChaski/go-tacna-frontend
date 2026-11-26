@@ -1,9 +1,10 @@
 /** Mensajes controlados de acceso; nunca expone el error crudo, tokens ni credenciales. */
 import axios from 'axios';
+import { mensajeErrorHttp } from '../../services/errores-http';
 import type { ErroresAlta } from './formulario-acceso';
 
 export function explicarErrorAcceso(error: unknown): { mensaje: string; campos: ErroresAlta } {
-  if (!axios.isAxiosError(error)) return { mensaje: 'No se pudo interpretar la respuesta de acceso. Inténtalo otra vez.', campos: {} };
+  if (!axios.isAxiosError(error)) return { mensaje: mensajeErrorHttp(error), campos: {} };
   const estado = error.response?.status;
   const mensajes: Record<number, string> = {
     401: 'El correo o la contraseña son incorrectos.',
@@ -22,6 +23,8 @@ export function explicarErrorAcceso(error: unknown): { mensaje: string; campos: 
         : remoto === 'dni' ? 'Revisa el documento: puede estar registrado o no ser válido.' : 'Revisa este campo según los requisitos indicados.';
     }
   }
-  return { mensaje: estado ? mensajes[estado] ?? 'El servidor no pudo completar la operación. Inténtalo más tarde.'
-    : 'No se pudo conectar con el servidor. Revisa la conexión e inténtalo otra vez.', campos };
+  return { mensaje: estado ? mensajes[estado] ?? mensajeErrorHttp(error)
+    : ['ECONNABORTED', 'ETIMEDOUT'].includes(error.code ?? '')
+      ? 'El servidor está demorando demasiado. Inténtalo nuevamente.'
+      : 'No se pudo conectar con el servidor. Revisa la conexión e inténtalo otra vez.', campos };
 }
