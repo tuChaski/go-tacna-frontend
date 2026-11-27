@@ -100,3 +100,42 @@ body:has(.consulta-publica) { min-width:0; }
 @media (max-width:960px) { .cp-ancho { width:calc(100% - 40px); } .cp-columnas { grid-template-columns:minmax(270px,.9fr) minmax(0,1.1fr); gap:16px; } .cp-panel { padding:20px; } .cp-pasos { display:none; } .cp-bienvenida { padding:28px; } .cp-tarjeta-ruta { padding:12px; gap:8px; } .cp-tarjeta-ruta .cp-icono { width:40px; height:40px; } .cp-tarjeta-micro { flex-wrap:wrap; } }
 @media (max-width:700px) { .cp-ancho { width:calc(100% - 32px); } .cp-barra { min-height:76px; gap:12px; } .cp-marca { font-size:18px !important; gap:8px; } .cp-marca small { font-size:7px; } .cp-barra nav { gap:8px; font-size:12px; } .cp-barra nav > a:not(.cp-cuenta) { display:none; } .cp-cuenta { padding:8px 12px; } .cp-presentacion { padding:30px 0 24px; } .cp-presentacion h1 { font-size:36px; } .cp-presentacion p { font-size:14px; } .cp-columnas { grid-template-columns:minmax(0,1fr); } .cp-panel { border-radius:18px; } .cp-bienvenida { min-height:360px; } .cp-bienvenida h2 { font-size:25px; } .cp-bienvenida .cp-eyebrow { font-size:9px; } .cp-tarjeta-micro { flex-wrap:nowrap; } .cp-ver-detalle { font-size:10px; } .cp-pie { flex-direction:column; } .cp-mapa { height:210px; } }
 @media (prefers-reduced-motion:reduce) { .consulta-publica *, .consulta-publica *::before, .consulta-publica *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
+
+/* Visor T058: los controles ocupan su propio espacio y la atribución permanece
+   desplegada. El mapa no impide seguir consultando el listado si falla WebGL. */
+.consulta-publica { font-size:16px; }
+.cp-columnas { grid-template-columns:minmax(300px,.78fr) minmax(0,1.45fr); }
+.cp-mapa-bienvenida h2 { font-size:26px; font-weight:750; margin:8px 0 12px; }
+.cp-visor { margin-top:22px !important; min-width:0; }
+.cp-herramientas-mapa { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+.cp-herramientas-mapa > span { display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:650; }
+.cp-herramientas-mapa .cp-boton { font-size:14px !important; }
+.cp-instrucciones-mapa { font-size:13px; color:var(--cp-suave); margin-bottom:12px !important; }
+.cp-lienzo-mapa { height:390px; position:relative; background:#edf2f7; border:1px solid #cbd5e1; border-radius:16px; overflow:hidden; isolation:isolate; }
+.cp-maplibre { width:100%; height:100%; }
+.cp-maplibre .maplibregl-canvas:focus-visible { outline:3px solid #2563eb; outline-offset:-4px; }
+.cp-zoom { display:flex; flex-direction:column; position:absolute; top:12px; right:12px; background:white; box-shadow:0 2px 12px #0f172a26; border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; }
+.cp-zoom button { border:0; background:white; color:#1d4ed8; width:48px; height:48px; display:grid; place-items:center; }
+.cp-zoom button + button { border-top:1px solid #e2e8f0; }
+.cp-zoom button:hover:not(:disabled) { background:#eff6ff; }
+.cp-zoom button:focus-visible { outline-offset:-4px; }
+.cp-visor figcaption { display:flex; flex-wrap:wrap; align-items:center; gap:7px; color:var(--cp-suave); font-size:12px; padding:10px 0; }
+.cp-visor figcaption a { color:#1d4ed8; text-decoration:underline; margin-left:auto; min-height:32px; display:inline-flex; align-items:center; }
+.cp-leyenda-linea { height:4px; width:22px; flex-shrink:0; background:#1d4ed8; border-radius:4px; }
+.cp-aviso-mapa { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:12px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; color:#334155; }
+.cp-aviso-mapa p { flex:1; min-width:150px; }
+.cp-fallo-mapa { background:#fffbeb; color:#78350f; border-color:#fde68a; }
+.cp-sin-trazado { margin-top:12px; font-size:14px; }
+.cp-ubicacion-micro { display:inline-flex; gap:5px; align-items:center; color:#52637a; font-size:13px; overflow-wrap:anywhere; }
+.cp-ubicacion-micro svg { flex-shrink:0; }
+.cp-estado-micro { color:#1d4ed8; background:#eff6ff; }
+.cp-estado-micro.cp-disponible { color:#15803d; background:#f0fdf4; }
+.cp-marcador { min-width:48px; height:48px; border:3px solid white; border-radius:15px 15px 15px 3px; background:#1d4ed8; color:white; font-size:12px !important; font-weight:750 !important; box-shadow:0 3px 12px #0f172a55; }
+.cp-marcador-seleccionado { background:#081b3d; outline:3px solid #60a5fa; outline-offset:2px; }
+.cp-maplibre .maplibregl-ctrl-attrib { background:#fffffff2; font-size:12px; padding:4px 8px; color:#334155; max-width:100%; }
+.cp-maplibre .maplibregl-ctrl-attrib a { color:#1e40af; text-decoration:underline; }
+.cp-maplibre .maplibregl-ctrl-bottom-right { max-width:100%; }
+.cp-maplibre .maplibregl-ctrl-attrib-inner { white-space:normal; }
+.cp-buscador label,.cp-info-ruta > span:not(.cp-estado),.cp-ayuda,.cp-resultados { font-size:14px; }
+@media (max-width:960px) { .cp-columnas { grid-template-columns:minmax(250px,.9fr) minmax(0,1.3fr); } .cp-lienzo-mapa { height:340px; } }
+@media (max-width:700px) { .cp-columnas { grid-template-columns:minmax(0,1fr); } .cp-lienzo-mapa { height:280px; } .cp-herramientas-mapa .cp-boton { width:100%; } .cp-tarjeta-micro { flex-wrap:wrap; } .cp-tarjeta-micro .cp-info-ruta { flex-basis:calc(100% - 72px); } .cp-ver-detalle { margin-left:auto; } .cp-visor figcaption a { margin-left:0; } }

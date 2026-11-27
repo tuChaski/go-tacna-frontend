@@ -1,12 +1,17 @@
 /** Lista permitida de datos para el visitante. Nunca conservamos los objetos de
  * usuario, conductor o historial de posiciones que también devuelve la API. */
+import { leerTrazado } from './datos-mapa.ts';
+import type { PosicionPublica } from './datos-mapa.ts';
+
 export interface RutaPublica {
   id: number; nombre: string; empresa: string;
   coordenadas: { latitud: number; longitud: number }[];
+  trazadoInvalido?: true;
 }
 export interface MicroPublico {
   id: number; placa: string; rutaId: number; capacidad: number | null;
   estado: 'disponible' | 'en_recorrido'; empresa: string;
+  posicion: PosicionPublica | null;
 }
 export interface PaginaPublica<T> {
   registros: T[]; pagina: number; ultima: number; total: number;
@@ -34,22 +39,8 @@ function empresaPublica(valor: unknown): string {
 export function adaptarRuta(valor: unknown): RutaPublica {
   const ruta = objeto(valor);
   if (ruta.activo !== true) throw new Error('Esta ruta ya no está disponible. Actualiza el listado.');
-  const coordenadas: RutaPublica['coordenadas'] = [];
-  // Un trazado ausente no oculta una ruta consultable. La geometría inválida
-  // tampoco se dibuja: el catálogo sigue funcionando sin inventar recorridos.
-  if (ruta.trazado_ruta != null) {
-    const trazado = objeto(ruta.trazado_ruta);
-    if (trazado.type !== 'LineString' || !Array.isArray(trazado.coordinates)) throw new Error('El recorrido recibido no es válido.');
-    for (const punto of trazado.coordinates) {
-      if (!Array.isArray(punto) || punto.length !== 2) throw new Error('El recorrido recibido no es válido.');
-      const [longitud, latitud] = punto;
-      if (typeof longitud !== 'number' || typeof latitud !== 'number' || !Number.isFinite(longitud) || !Number.isFinite(latitud)
-        || Math.abs(longitud) > 180 || Math.abs(latitud) > 90) throw new Error('El recorrido recibido no es válido.');
-      coordenadas.push({ longitud, latitud });
-    }
-    if (coordenadas.length < 2) coordenadas.length = 0;
-  }
-  return { id: identificador(ruta.id), nombre: texto(ruta.nombre_ruta), empresa: empresaPublica(ruta.empresa), coordenadas };
+  // Un problema de geometría no impide consultar las unidades de la ruta.
+  return { id: identificador(ruta.id), nombre: texto(ruta.nombre_ruta), empresa: empresaPublica(ruta.empresa), ...leerTrazado(ruta.trazado_ruta) };
 }
 
 export function adaptarMicro(valor: unknown, rutaId: number): MicroPublico {
@@ -65,6 +56,10 @@ export function adaptarMicro(valor: unknown, rutaId: number): MicroPublico {
     id: identificador(micro.id), placa: texto(micro.placa), rutaId,
     capacidad: typeof capacidad === 'number' && Number.isSafeInteger(capacidad) && capacidad > 0 ? capacidad : null,
     estado: micro.estado, empresa: empresaPublica(micro.empresa),
+    // Pendiente backend: no existe un DTO REST de posición pública autorizado.
+    // No usar posiciones, ultima_posicion ni datos del conductor como atajo.
+    // El visor admite el modelo mínimo para integrarlo cuando se acuerde.
+    posicion: null,
   };
 }
 

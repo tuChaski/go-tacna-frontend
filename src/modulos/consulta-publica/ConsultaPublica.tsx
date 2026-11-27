@@ -4,15 +4,17 @@ import { ArrowLeft, ArrowRight, BusFront, CheckCircle2, ChevronRight, CircleAler
 import { apiPublica } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { enlaceCuenta, etiquetaCuenta } from '../autenticacion/enlaces-sesion';
-import { MapaBusesRespaldo } from '../inicio/componentes/MapaBusesRespaldo';
-import type { RutaInicio } from '../inicio/datos/tipos-inicio';
-import type { RutaPublica } from './contrato-publico';
+import VisorMapaPublico from './VisorMapaPublico';
+import type { MicroPublico, RutaPublica } from './contrato-publico';
+import { textoFechaPosicion } from './datos-mapa';
 import { crearConsultaPublica } from './servicio-consulta';
 import { useLecturaPublica } from './useLecturaPublica';
 import '@fontsource-variable/inter';
 import './consulta-publica.css';
 
 const consulta = crearConsultaPublica(apiPublica);
+const SIN_MICROS: MicroPublico[] = [];
+const sinSeleccion = () => {};
 
 /** La selección es única y local. El catálogo no comparte el recorte ni los
  * ejemplos de la landing: todos los resultados se confirman con la API. */
@@ -72,7 +74,7 @@ export function ConsultaPublica() {
             <Paginacion pagina={lectura.datos.pagina} ultima={lectura.datos.ultima} nombre="rutas" alCambiar={pagina => establecerFiltro(actual => ({ ...actual, pagina }))} />
           </>}
         </section>
-        <div className="cp-consulta-ruta">{ruta ? <PanelRuta key={ruta.id} rutaId={ruta.id} alCerrar={cerrarRuta} /> : <section className="cp-panel cp-bienvenida" aria-labelledby="seleccion-titulo"><div className="cp-ilustracion"><Route size={70} strokeWidth={1.3} aria-hidden="true" /><span><BusFront size={28} aria-hidden="true" /></span></div><span className="cp-eyebrow">CADA VIAJE EMPIEZA CON UNA RUTA</span><h2 id="seleccion-titulo">¿Por dónde vas hoy?</h2><p>Elige una ruta del catálogo para ver su recorrido registrado y consultar sus unidades activas.</p><div className="cp-aviso"><ShieldCheck size={19} aria-hidden="true" /><p>Puedes consultar como invitado. No necesitas iniciar sesión.</p></div></section>}</div>
+        <div className="cp-consulta-ruta">{ruta ? <PanelRuta key={ruta.id} rutaId={ruta.id} alCerrar={cerrarRuta} /> : <section className="cp-panel cp-mapa-bienvenida" aria-labelledby="seleccion-titulo"><span className="cp-eyebrow">EXPLORA TU CIUDAD</span><h2 id="seleccion-titulo">¿Por dónde vas hoy?</h2><p className="cp-ayuda">Elige una ruta del catálogo para ver su recorrido y sus micros activos.</p><VisorMapaPublico ruta={null} micros={SIN_MICROS} seleccionado={null} alSeleccionar={sinSeleccion} /><div className="cp-aviso"><ShieldCheck size={19} aria-hidden="true" /><p>Puedes consultar como invitado. No necesitas iniciar sesión ni compartir tu ubicación.</p></div></section>}</div>
       </div>
       <footer className="cp-pie"><span>Go Tacna · Rutas que conectan tu ciudad</span><p>Consulta de catálogo. El seguimiento en vivo se incorporará en otra etapa.</p></footer>
     </main>
@@ -87,40 +89,47 @@ function PanelRuta({ rutaId, alCerrar }: { rutaId: number; alCerrar: () => void 
   useEffect(() => { titulo.current?.focus(); titulo.current?.scrollIntoView({ block: 'start', behavior: 'instant' }); }, []);
   return <section className="cp-panel cp-ruta-detalle" aria-labelledby="ruta-seleccionada-titulo">
     <div className="cp-titulo-panel"><div><span className="cp-eyebrow">TU RUTA SELECCIONADA</span><h2 ref={titulo} tabIndex={-1} id="ruta-seleccionada-titulo">{lectura.datos?.nombre ?? 'Consultar ruta'}</h2></div><button className="cp-boton-icono" type="button" aria-label="Cerrar ruta seleccionada" onClick={alCerrar}><X size={20} aria-hidden="true" /></button></div>
-    {lectura.cargando ? <Cargando texto="Consultando el detalle de la ruta…" /> : lectura.error ? <ErrorConsulta mensaje={lectura.error} reintentar={() => establecerRevision(actual => actual + 1)} /> : lectura.datos && <><p className="cp-empresa"><BusFront size={16} aria-hidden="true" />{lectura.datos.empresa}</p><Recorrido ruta={lectura.datos} /><UnidadesRuta ruta={lectura.datos} /></>}
+    {lectura.cargando ? <Cargando texto="Consultando el detalle de la ruta…" /> : lectura.error ? <ErrorConsulta mensaje={lectura.error} reintentar={() => establecerRevision(actual => actual + 1)} /> : lectura.datos && <><p className="cp-empresa"><BusFront size={16} aria-hidden="true" />{lectura.datos.empresa}</p><UnidadesRuta ruta={lectura.datos} /></>}
   </section>;
-}
-
-function Recorrido({ ruta }: { ruta: RutaPublica }) {
-  // Solo dibujamos la geometría registrada con el componente existente. El mapa
-  // interactivo completo corresponde a T058; no simulamos ubicaciones de buses.
-  const rutas: RutaInicio[] = [{ ...ruta, activa: true, color: '#60a5fa' }];
-  return <figure className="cp-recorrido">{ruta.coordenadas.length >= 2 ? <div className="cp-mapa"><MapaBusesRespaldo rutas={rutas} etiqueta="Esquema del recorrido" /><span><MapPin size={14} aria-hidden="true" /> Recorrido registrado</span></div> : <div className="cp-sin-trazado"><MapPin size={25} aria-hidden="true" /><p>Esta ruta aún no tiene un trazado publicado.</p></div>}<figcaption>Esquema del recorrido · No representa ubicaciones actuales de los micros.</figcaption></figure>;
 }
 
 function UnidadesRuta({ ruta }: { ruta: RutaPublica }) {
   const [pagina, establecerPagina] = useState(1);
   const [revision, establecerRevision] = useState(0);
   const [seleccionado, establecerSeleccionado] = useState<number | null>(null);
+  const origenSeleccion = useRef<HTMLElement | null>(null);
+  const seleccionar = useCallback((id: number, origen: HTMLElement) => {
+    origenSeleccion.current = origen;
+    establecerSeleccionado(id);
+  }, []);
   const cargar = useCallback((signal: AbortSignal) => consulta.micros(ruta.id, pagina, signal), [ruta.id, pagina]);
   const lectura = useLecturaPublica(`${ruta.id}-${pagina}-${revision}`, cargar);
   function cerrarDetalle() {
     const id = seleccionado;
-    (document.getElementById(`micro-publico-${id}`) ?? document.getElementById('unidades-titulo'))?.focus();
+    (origenSeleccion.current?.isConnected ? origenSeleccion.current : document.getElementById(`micro-publico-${id}`) ?? document.getElementById('unidades-titulo'))?.focus();
     establecerSeleccionado(null);
   }
-  return <section className="cp-unidades" aria-labelledby="unidades-titulo">
+  return <>
+    <VisorMapaPublico ruta={ruta} micros={lectura.datos?.registros ?? SIN_MICROS} seleccionado={seleccionado} alSeleccionar={seleccionar} />
+    {!ruta.coordenadas.length && <div className="cp-sin-trazado" role="status"><MapPin size={22} aria-hidden="true" /><p>{ruta.trazadoInvalido ? 'El trazado recibido no es compatible. Puedes consultar los micros de esta ruta.' : 'Esta ruta aún no tiene un trazado publicado. Puedes consultar sus micros.'}</p></div>}
+    <section className="cp-unidades" aria-labelledby="unidades-titulo">
     <div className="cp-separador"><h3 id="unidades-titulo" tabIndex={-1}>Micros activos</h3><button className="cp-texto-boton" type="button" disabled={lectura.cargando} onClick={() => establecerRevision(actual => actual + 1)}><RefreshCw size={14} aria-hidden="true" />Actualizar micros</button></div>
     <p className="cp-ayuda">Incluye unidades disponibles y en recorrido. El estado no indica cercanía ni tiempo de llegada.</p>
     {lectura.cargando ? <Cargando texto="Consultando micros de esta ruta…" /> : lectura.error ? <ErrorConsulta mensaje={lectura.error} reintentar={() => { establecerPagina(1); establecerRevision(actual => actual + 1); }} /> : lectura.datos && <>
       <p className="cp-resultados" role="status">{lectura.datos.total} {lectura.datos.total === 1 ? 'micro activo' : 'micros activos'}</p>
-      {lectura.datos.registros.length ? <ul className="cp-lista-micros">{lectura.datos.registros.map(micro => <li key={micro.id}><button className={`cp-tarjeta-micro${seleccionado === micro.id ? ' cp-seleccionada' : ''}`} type="button" id={`micro-publico-${micro.id}`} onClick={() => establecerSeleccionado(micro.id)} aria-expanded={seleccionado === micro.id}>
-        <span className="cp-icono"><BusFront size={24} aria-hidden="true" /></span><span className="cp-info-ruta"><strong>{micro.placa}</strong><span className={`cp-estado${micro.estado === 'disponible' ? ' cp-disponible' : ''}`}>{micro.estado === 'en_recorrido' ? 'En recorrido' : 'Disponible'}</span></span><span className="cp-ver-detalle">Ver detalle <ChevronRight size={17} aria-hidden="true" /></span>
+      {lectura.datos.registros.length ? <ul className="cp-lista-micros">{lectura.datos.registros.map(micro => <li key={micro.id}><button className={`cp-tarjeta-micro${seleccionado === micro.id ? ' cp-seleccionada' : ''}`} type="button" id={`micro-publico-${micro.id}`} onClick={evento => seleccionar(micro.id, evento.currentTarget)} aria-expanded={seleccionado === micro.id}>
+        <span className="cp-icono"><BusFront size={24} aria-hidden="true" /></span><span className="cp-info-ruta"><strong>{micro.placa}</strong><span className={`cp-estado cp-estado-micro${micro.estado === 'disponible' ? ' cp-disponible' : ''}`}><CheckCircle2 size={13} aria-hidden="true" />{micro.estado === 'en_recorrido' ? 'En recorrido' : 'Disponible'}</span><UbicacionMicro micro={micro} /></span><span className="cp-ver-detalle">Ver detalle <ChevronRight size={17} aria-hidden="true" /></span>
       </button></li>)}</ul> : <EstadoVacio titulo="Sin micros activos en esta ruta" texto="La ruta está publicada, pero no hay unidades activas reportadas por el servicio. Puedes actualizar o elegir otra ruta." />}
-      <Paginacion pagina={lectura.datos.pagina} ultima={lectura.datos.ultima} nombre="micros" alCambiar={establecerPagina} />
+      <Paginacion pagina={lectura.datos.pagina} ultima={lectura.datos.ultima} nombre="micros" alCambiar={nueva => { establecerSeleccionado(null); establecerPagina(nueva); }} />
     </>}
     {seleccionado !== null && <DetalleMicro key={`${seleccionado}-${revision}`} id={seleccionado} ruta={ruta} alCerrar={cerrarDetalle} />}
-  </section>;
+  </section></>;
+}
+
+function UbicacionMicro({ micro }: { micro: MicroPublico }) {
+  return <span className="cp-ubicacion-micro"><MapPin size={13} aria-hidden="true" />{micro.posicion
+    ? <span>Posición registrada: <time dateTime={micro.posicion.fecha}>{textoFechaPosicion(micro.posicion)} (hora de Perú)</time></span>
+    : 'Ubicación no disponible'}</span>;
 }
 
 function DetalleMicro({ id, ruta, alCerrar }: { id: number; ruta: RutaPublica; alCerrar: () => void }) {
@@ -133,6 +142,7 @@ function DetalleMicro({ id, ruta, alCerrar }: { id: number; ruta: RutaPublica; a
     <div className="cp-titulo-panel"><h3 id="detalle-micro-titulo" ref={titulo} tabIndex={-1}>Detalle del micro</h3><button type="button" className="cp-boton-icono" aria-label="Cerrar detalle del micro" onClick={alCerrar}><X size={20} aria-hidden="true" /></button></div>
     {lectura.cargando ? <Cargando texto="Consultando la unidad seleccionada…" /> : lectura.error ? <ErrorConsulta mensaje={lectura.error} reintentar={() => establecerRevision(actual => actual + 1)} /> : lectura.datos && <>
       <div className="cp-placa"><BusFront size={29} aria-hidden="true" /><strong>{lectura.datos.placa}</strong></div>
+      <UbicacionMicro micro={lectura.datos} />
       <dl><div><dt>Ruta</dt><dd>{ruta.nombre}</dd></div><div><dt>Empresa</dt><dd>{lectura.datos.empresa}</dd></div><div><dt>Estado reportado</dt><dd>{lectura.datos.estado === 'en_recorrido' ? 'En recorrido' : 'Disponible'}</dd></div><div><dt>Capacidad de la unidad</dt><dd>{lectura.datos.capacidad === null ? 'Sin información' : `${lectura.datos.capacidad} pasajeros`}</dd></div></dl>
       <p className="cp-ayuda">La capacidad es el máximo de pasajeros de la unidad; no indica cuántas personas van a bordo. Esta consulta no incluye seguimiento en vivo.</p>
     </>}

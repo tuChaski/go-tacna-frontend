@@ -1,0 +1,781 @@
+ACTUALIZACIÓN DE CONTINUIDAD · 27/11/2026
+
+La base fue recuperada por Alex mediante el PR #132; también se integró el PR
+#131 de correcciones QA. La rama T058 parte de 24b8a86 y conserva T057/T059/T102.
+La recuperación descrita más abajo ya se realizó: no repetir esos comandos.
+
+T058: visor frontend implementado con MapLibre GL JS 6.19.0, raster OSM Standard,
+worker ES empaquetado por Vite, validación de trazados y recuperación del mapa.
+Pasaron 105 pruebas Node, 38 comprobaciones de interfaz y 22 lecturas públicas
+contra Laravel. Se revisaron los cuatro anchos y el build con calles reales.
+Los resultados y comandos exactos están en:
+src/modulos/consulta-publica/T058.md
+src/modulos/consulta-publica/entrega-t058.md
+
+No se hicieron commits, push, merges ni PR durante esta implementación.
+Backend sigue a cargo de privacidad y del contrato de posición pública.
+El adaptador real asigna posicion:null; no presenta GPS ni movimiento ficticio.
+La implementación frontend está lista para revisión, sin declarar cerrada la
+integración o aprobada la publicación. Esta actualización prevalece sobre el
+estado histórico de la revisión inicial que se conserva a continuación.
+
+CONTEXTO ACTUALIZADO DE GO TACNA PARA CONTINUAR T058
+Fecha de revisión: 26/11/2026, America/Bogota.
+
+Este archivo reúne el contexto recibido, las aclaraciones de Alex, los hallazgos
+verificados y el prompt completo. Las correcciones de esta primera parte tienen
+prioridad sobre los estados históricos descritos después.
+Es un archivo local de continuidad, no una modificación de go-tacna-docs.
+
+ACLARACIONES EXPRESAS DE ALEX
+
+- La reversión fue intencional: el PR de T057 se había dirigido a main cuando
+  debía dirigirse a develop. No significa que se haya descartado la consulta.
+- La exposición de datos personales en la API la resolverá el equipo backend.
+  Alex no puede modificar backend por ahora. No editar ese repositorio.
+- Continuar el trabajo web de T058 cuando esté recuperada su base. El pendiente
+  de privacidad no impide desarrollar el visor, pero debe mantenerse documentado
+  y resolverse antes del despliegue público.
+- Mantener MapLibre GL JS para web y react-native-maps para móvil.
+- Todas las operaciones de Git las ejecuta Alex manualmente. El asistente solo
+  lee estado e historial; no cambia ramas, índice, commits, remotos ni PR.
+
+HECHO COMPROBADO SOBRE FRONTEND Y LA REVERSIÓN
+
+Repositorio: https://github.com/tuChaski/go-tacna-frontend
+Rama local: feature/T058-visor-mapa.
+HEAD, develop local y develop remoto al revisar:
+bf6769227d3ce12c8fb6623f42e1e9d00d6b4d88.
+No había cambios locales al comenzar esta revisión.
+
+- PR #126: T102, integrado en develop.
+- PR #128: mejoras T059, integrado en develop.
+- PR #129: T057, integrado en MAIN el 26/11/2026.
+  https://github.com/tuChaski/go-tacna-frontend/pull/129
+- PR #130: reversión de #129, integrada en DEVELOP el 26/11/2026.
+  https://github.com/tuChaski/go-tacna-frontend/pull/130
+- Commit de reversión: 90b0cd2e41e5dbc0b84b5871ee5ba5e05f37f65f.
+- La reversión afecta 105 archivos: elimina T057, panel administrativo,
+  autenticación, renovación de sesión, pruebas y parte de la landing anterior.
+  El efecto supera el alcance propio de T057 (17 archivos).
+- main remoto sigue en aaa3e873124933e07c6af2d2bca20ddf4bca55a6,
+  con el árbol de T057. El cambio de main no se ha corregido en esta revisión.
+- feature/T057-consulta-publica conserva cab1782455b3dce918e9ddfb3ae4478b6f6748a8.
+  Su árbol coincide con el de main después del PR #129.
+- T057 ya es ancestro de develop. Abrir de nuevo un PR desde esa misma rama
+  no recupera por sí solo el contenido que retiró el revert.
+- PR #131, fix/qa-auditoria-frontend -> develop, está abierto. No considerar
+  integrados sus cambios de validación DNI/teléfono, Leaflet y eliminación.
+  https://github.com/tuChaski/go-tacna-frontend/pull/131
+
+Recuperación propuesta: invertir el commit 90b0cd2 en una rama de corrección y
+un PR separados hacia develop; después actualizar la rama T058 desde develop.
+Se comprobó con git apply --reverse --check, sin aplicar el parche, que la
+inversión encaja en el checkout actual. No se ejecutó la recuperación.
+Los comandos y el PR propuesto están en RECUPERAR_BASE_T058.txt.
+No usar reset, force push ni copiar la base completa dentro del commit T058.
+
+REVISIÓN DE LOS CINCO REPOSITORIOS EN GITHUB
+
+Se consultaron metadatos, ramas y PR recientes de los cinco repositorios;
+además se leyeron árboles, README y archivos relevantes de contratos/dependencias.
+No es una auditoría exhaustiva de cada archivo ni una prueba de todos sus módulos.
+La rama predeterminada en GitHub es main en los cinco repositorios. Eso no cambia
+el destino develop acordado para los PR de frontend.
+
+1. go-tacna-frontend
+   React 19, TypeScript 6 y Vite 8. Leaflet permanece en las dependencias.
+   La base aprobada de T057 tiene Inter, rutas públicas, panel y cliente de sesión.
+   El checkout actual carece de esos módulos por la reversión descrita arriba.
+   T058 #94 está abierto y depende de #26 y #93.
+   #26 todavía describe Leaflet para el mapa base: para el visor público web
+   prevalece la elección expresa de MapLibre GL JS indicada por Alex.
+   No se ha instalado MapLibre ni implementado T058 en esta revisión.
+   https://github.com/tuChaski/go-tacna-frontend/issues/94
+
+2. go-tacna-backend
+   Contiene gotacna-backend-core y gotacna-api-gateway (Laravel),
+   go-tacna-location-service y, en develop, realtime/ (Node/Socket.IO).
+   El README remoto conserva texto desactualizado sobre un repositorio vacío
+   y un monorepo: el árbol real ya contiene esos componentes separados.
+   develop remoto y checkout local: 1b7af7c, sin cambios locales al revisar.
+   PR #3 integra configuración WebSocket en develop; PR #4 integra pruebas.
+   Existe la rama remota fix/passenger-realtime-contract-access con DTO de micro
+   y guía local de tiempo real. Su existencia no acredita que esté integrada
+   en develop ni que corrija la privacidad de los endpoints REST de Laravel.
+   No se modificó backend ni se ejecutaron migraciones, seeders o escrituras.
+   https://github.com/tuChaski/go-tacna-backend
+
+3. go-tacna-movil
+   develop remoto: b2708aa. Fases 1 y 2 integradas mediante PR #1 y #2.
+   El README remoto conserva referencias antiguas a una app vacía y MapLibre.
+   El package.json remoto de develop NO contiene react-native-maps.
+   El checkout LOCAL está en feature/mobile-phase-3-passenger-live y sí tiene
+   react-native-maps 1.27.2, Expo ~57.0.33 y React Native 0.86.3.
+   Hay cambios locales de fase 3 sin confirmar, incluyendo mapas, ubicación,
+   pantalla de seguimiento y pruebas. Son trabajo existente que debe conservarse.
+   No afirmar que están integrados en GitHub ni probados en dispositivo físico.
+   No se editó ni probó la aplicación móvil durante esta revisión web.
+   https://github.com/tuChaski/go-tacna-movil
+
+4. go-tacna-docs
+   Contiene contratos OpenAPI, WebSocket, GPS y JWT, diseño y arquitectura.
+   develop remoto: 3358eb0. T091 está integrado en develop mediante PR #28.
+   El checkout local está en docs/T091-arquitectura-contenido, sin cambios locales.
+   Algunas guías antiguas dicen que docs solo usa main, pero GitHub tiene develop
+   y PR recientes integrados allí: comprobar destino por tarea, no asumirlo.
+   DEC-002 (arquitectura/decisiones/002-expo-y-maplibre.md) está Pendiente y aún
+   propone MapLibre en móvil. Registrar la discrepancia: la decisión de Alex
+   vigente es react-native-maps en móvil y MapLibre GL JS en web.
+   No se editaron los documentos oficiales de ese repositorio.
+   https://github.com/tuChaski/go-tacna-docs
+
+5. go-tacna-infraestructura
+   develop remoto y checkout local: a76080f, sin cambios locales.
+   Compose enlaza repositorios hermanos y publica el punto de entrada local
+   en 127.0.0.1:8001. Incluye PostgreSQL/PostGIS, core, gateway, frontend y Nginx.
+   Su configuración documentada monta go-tacna-location-service; el código nuevo
+   de tiempo real en backend/realtime es otro directorio. No asumir integración
+   solo porque el handshake Socket.IO o el estado de salud responden.
+   El README distingue Compose actual de referencias históricas de despliegue
+   y K3s. No se verificó el VPS ni el despliegue de producción en esta revisión.
+   No se reiniciaron servicios, reconstruyeron imágenes o tocaron volúmenes.
+   https://github.com/tuChaski/go-tacna-infraestructura
+
+API LOCAL Y PENDIENTE DE BACKEND
+
+Se hicieron lecturas sin token a http://127.0.0.1:8001/api/v1.
+/rutas devuelve geometría LineString registrada. /micros/activos y el detalle
+/micros/{id} siguen incluyendo conductor_actual.usuario con campos dni,
+correo y telefono. Se comprobaron nombres de campos, sin guardar sus valores
+personales en este contexto. El detalle también incluye posiciones.
+
+Responsable de corregir la respuesta: equipo backend, según aclaración de Alex.
+El frontend debe seguir descartando datos personales e historial GPS, conservar
+un modelo público mínimo y documentar que ocultar campos no corrige la red.
+No se puede presentar este pendiente como resuelto por una aprobación del PR web.
+
+En la respuesta de micros revisada no hay un campo contractual de posición
+pública mínima autorizado para el visor T058. No extraer posiciones de un
+historial por iniciativa propia ni inferir autorización a partir de un HTTP 200.
+Mantener tarjetas con “Ubicación no disponible” hasta contar con el contrato.
+La documentación menciona RN-04 y un umbral de dos minutos para señal en otros
+flujos; revisar su aplicación contractual a posiciones REST antes de reutilizarlo.
+No inventar vigencia, coordenadas, ETA, aforo ni movimiento.
+
+DISEÑO Y PLAN T058 CONSERVADOS
+
+Ya se revisaron mediante el plugin Figma las capturas del selector 70:16423 y
+el detalle 70:16584 del archivo Lw9Pbwc65lMKyjsW5IWZaD. Referencia: azul de marca,
+Inter, tarjetas claras, botones grandes y estado legible. Los ETA y posiciones
+del prototipo no constituyen datos reales.
+
+Cuando la base esté recuperada:
+1. Conservar T057 y el cliente público sin tokens; mantener T102 y el panel.
+2. Añadir visor MapLibre con carga diferida dentro del módulo consulta-publica.
+3. Validar GeoJSON, ajustar cámara solo al cambiar ruta y conservar vista manual.
+4. Mantener consulta alternativa si falla WebGL o el proveedor del mapa.
+5. Habilitar marcadores solo para posiciones públicas válidas y autorizadas.
+6. Revisar proveedor de estilo/teselas, cobertura de Tacna, condiciones, claves
+   públicas si corresponden, atribución y credenciales omitidas. No se ha elegido
+   proveedor definitivo ni versión de MapLibre en esta revisión.
+7. Añadir pruebas de geometría, cámara, selección, limpieza, errores y respuestas
+   antiguas; verificar 320, 390, 768 y 1440 px y regresiones relacionadas.
+8. Documentar los resultados reales y el pendiente backend antes de la entrega.
+
+ESTADO AL ENTREGAR ESTE CONTEXTO
+
+- Solo se crearon CONTEXTO_GO_TACNA_T058.txt y RECUPERAR_BASE_T058.txt en frontend.
+- No se modificó código de aplicación, dependencias, backend, móvil ni infraestructura.
+- No se cambiaron ramas, commits, índice ni PR.
+- Las pruebas históricas de T057 se conservan abajo como antecedentes: no se han
+  vuelto a ejecutar en el checkout revertido. No hubo sesiones con personas reales.
+- T058 continúa pendiente; requiere recuperar la base con Git ejecutado por Alex.
+
+======================================================================
+CONTEXTO ORIGINAL CONSERVADO CON LAS CORRECCIONES DE ESTADO INDICADAS
+======================================================================
+
+CONTEXTO DEL PROYECTO GO TACNA
+
+Estoy desarrollando Go Tacna, un proyecto para consultar rutas y conocer la ubicación de micros de transporte público en Tacna, Perú.
+
+Mi nombre es Alex Huaracha Bellido y mi usuario de GitHub es:
+Alex-Huaracha-Bellido
+
+Quiero explicaciones sencillas en español, trabajo ordenado, diseño moderno y comentarios útiles en español dentro del código.
+
+REPOSITORIOS Y CARPETAS
+
+Organización:
+https://github.com/tuChaski
+
+Tablero de mis tareas:
+https://github.com/orgs/tuChaski/projects/1/views/13
+
+Carpeta local del proyecto:
+E:\UNJBG\OCTAVO CICLO 8\INGENIERIA WEB\PROYECTO-CHASQUI
+
+Repositorios:
+- go-tacna-frontend
+- go-tacna-backend
+- go-tacna-movil
+- go-tacna-docs
+- go-tacna-infraestructura
+
+Entorno: Windows y PowerShell.
+
+FORMA DE TRABAJAR CON GIT
+
+Yo ejecuto manualmente los comandos de Git.
+
+No crear ni cambiar ramas, hacer commits, push, merges ni pull requests por mi cuenta. Puedes revisar el estado y las diferencias sin modificar Git.
+
+Al terminar, dame los comandos exactos para añadir los archivos de la tarea, hacer commit y push. También el título y la descripción del PR.
+
+Para frontend estamos trabajando desde develop y los PR van hacia develop.
+
+Antes de editar:
+- Confirmar la rama.
+- Revisar instrucciones del repositorio.
+- Comprobar cambios existentes.
+- No sobrescribir trabajo ajeno.
+- Revisar GitHub y la documentación actual.
+
+IDEA GENERAL DEL PRODUCTO
+
+Administrador general:
+- Gestiona empresas de transporte.
+- Crea las cuentas de administradores de empresa.
+- Podrá gestionar usuarios, planes y otros módulos futuros.
+
+Administrador de empresa:
+- Gestiona rutas, micros y conductores de su empresa.
+- Crea las credenciales de sus conductores.
+- Asigna conductores a micros; la asignación puede variar.
+- Tendrá monitoreo y resumen de su flota.
+
+Conductor:
+- Inicia y finaliza su recorrido.
+- Su ubicación permitirá actualizar la posición del micro.
+
+Pasajero:
+- Puede consultar como invitado.
+- Una cuenta permitirá funciones adicionales.
+- Los límites definitivos para cuentas gratuitas y Premium se definirán después.
+
+Para la consulta de invitado se acordó una ruta y una unidad seleccionadas a la vez. No inventar cuotas nuevas para los otros planes.
+
+Los pagos de pasajes están fuera del alcance actual. Premium, aforo y otras funciones son ampliaciones futuras.
+
+TRABAJOS ANTERIORES
+
+T054:
+Se documentó una simulación de usabilidad del prototipo. No afirmar que fueron sesiones con personas reales.
+
+T091:
+Se elaboró la arquitectura de contenido, mapa del sitio e inventario de vistas.
+
+T102:
+Se implementó renovación de sesión JWT y manejo global de errores HTTP. Su PR #126 fue integrado en develop.
+
+T059:
+Se conectó el panel administrativo con Laravel y se mejoraron sus listados.
+El PR #128 fue integrado en develop.
+
+Los listados de Empresas, Rutas, Micros y Conductores tienen acciones directas:
+- Ver
+- Editar
+- Cambiar estado
+- Eliminar
+
+Las escrituras piden confirmación y esperan respuesta del servidor.
+En los detalles quedaron Volver al listado y Editar.
+
+Estados:
+- Activo/Disponible: verde.
+- Inactivo/Sin conexión: rojo.
+- En recorrido: azul.
+- Mantenimiento: ámbar.
+
+Al registrar un conductor, se crean su perfil y su cuenta con rol conductor. El formulario separa:
+- Datos del conductor.
+- Acceso del conductor: correo y contraseña inicial.
+
+El administrador define esas credenciales y se las entrega al conductor.
+El botón se llama Crear conductor y cuenta.
+
+Editar después los datos personales, contraseña o activación de la cuenta del conductor sigue dependiendo de permisos y funcionalidades del backend. Cambiar su disponibilidad operativa no activa ni desactiva su cuenta.
+
+T057: AVANCE QUE DEBE CONSERVARSE
+
+Tarea:
+https://github.com/tuChaski/go-tacna-frontend/issues/93
+
+Se implementó la consulta pública web de rutas y micros activos.
+
+Su rama fue:
+feature/T057-consulta-publica
+
+El PR #129 se integró por error en main, aunque debía ir a develop. Alex confirmó que la reversión fue intencional para corregir ese destino, no para descartar T057. La revisión posterior comprobó que el PR #130 de reversión se integró en develop y retiró también avances anteriores. El checkout actual NO contiene T057: debe recuperarse primero la base mediante un PR de corrección hacia develop.
+
+La página /mapa permite:
+- Entrar sin cuenta.
+- Buscar rutas por nombre.
+- Consultar las distintas páginas del catálogo.
+- Seleccionar una ruta.
+- Ver su recorrido registrado mediante un esquema SVG.
+- Consultar micros activos de esa ruta.
+- Abrir y cerrar el detalle de una unidad.
+- Ver placa, empresa, ruta, estado y capacidad.
+- Manejar carga, errores y resultados vacíos.
+- Abrir una ruta mediante un enlace como /mapa?ruta=4.
+
+La capacidad del micro no representa ocupación actual.
+
+La consulta real no usa datos ficticios como reemplazo de un fallo.
+La demostración de la landing permanece separada.
+
+Los tamaños de página son 8 rutas y 6 micros. Son paginación, no límites del plan del visitante.
+
+MODULO DE T057
+
+Directorio:
+E:\UNJBG\OCTAVO CICLO 8\INGENIERIA WEB\PROYECTO-CHASQUI\go-tacna-frontend\src\modulos\consulta-publica
+
+Archivos:
+- ConsultaPublica.tsx
+- contrato-publico.ts
+- servicio-consulta.ts
+- useLecturaPublica.ts
+- consulta-publica.css
+- README.md
+
+El README contiene el alcance, las decisiones, los resultados de pruebas y los pendientes.
+
+La entrada existente MapaPublico.tsx quedó como un componente que monta la nueva consulta.
+
+Se reutilizó MapaBusesRespaldo.tsx para representar el recorrido registrado. Se añadió una etiqueta configurable para distinguir el esquema de la demostración.
+
+Los enlaces de la landing se ajustaron para abrir la consulta pública.
+
+CLIENTE HTTP Y PROTECCIONES DE T057
+
+En la configuración de API se añadió apiPublica:
+- Comparte URL y tiempos de espera.
+- No adjunta Authorization.
+- No ejecuta renovaciones de sesión.
+- No transmite el token de un administrador que esté autenticado.
+
+Conservar el cliente privado y el funcionamiento de T102.
+
+Los adaptadores públicos:
+- Validan identificadores, estados, geometría y paginación.
+- Conservan solo campos necesarios para la pantalla.
+- No guardan los objetos completos de usuario o conductor.
+- No conservan historial GPS.
+
+Las solicitudes se cancelan al cambiar selección o desmontar.
+Las respuestas antiguas no deben reemplazar la selección actual.
+Los nombres se renderizan como texto, sin insertar HTML recibido.
+
+API Y ENTORNO LOCAL
+
+Frontend:
+http://127.0.0.1:5173
+
+API local:
+http://127.0.0.1:8001/api/v1
+
+Endpoints públicos revisados:
+- GET /rutas
+- GET /rutas/{id}
+- GET /micros/activos
+- GET /micros/{id}
+
+Filtros conocidos:
+- Rutas: search, page, per_page.
+- Micros activos: ruta_id, search por placa, page, per_page.
+
+El backend incluye disponible y en_recorrido dentro de micros activos. “Disponible” no significa que esté circulando ni que tenga GPS reciente.
+
+Los servicios locales usan Docker. Si la API está apagada, revisar primero Docker y la configuración existente. No ejecutar migraciones ni seeders sobre la base actual por iniciativa propia.
+
+La referencia anterior para las pruebas fue backend/main. En la revisión del 26/11/2026 el checkout local de backend está en develop. La API local responde, pero no se ha acreditado qué imagen o revisión exacta está ejecutando Docker. No cambiar ramas del backend automáticamente.
+
+PENDIENTE REAL DE PRIVACIDAD
+
+Durante T057 se verificó sin token que la API pública devolvía datos personales del conductor dentro de conductor_actual.usuario, incluyendo DNI, correo y teléfono.
+
+El frontend los descarta, pero siguen accesibles en la respuesta de red.
+
+También se detectó historial posiciones en el detalle y diferencias entre las comprobaciones de empresa/ruta activa del listado y del detalle.
+
+Antes de publicar:
+- Comprobar si backend corrigió estos puntos.
+- Coordinar una respuesta pública mínima.
+- No considerar resuelto el problema solo porque la interfaz oculta campos.
+
+No modificar backend sin explicar y coordinar el cambio. La aprobación del PR de frontend no demuestra que este pendiente haya sido corregido.
+
+PRUEBAS DE T057
+
+En el trabajo anterior se registraron:
+- 80 pruebas automatizadas aprobadas: 57 existentes y 23 nuevas.
+- 22 solicitudes públicas de integración sin token.
+- 42 solicitudes de regresión administrativa.
+- Lint y compilación correctos.
+- Advertencia previa del bundle 3D de la landing superior a 500 kB.
+
+Se revisaron en navegador:
+- Consulta como invitado.
+- Ruta y detalle de micro.
+- Búsqueda con Enter.
+- Búsqueda sin coincidencias.
+- Devolución del foco al cerrar.
+- Escritorio, tableta y móvil.
+- Corrección de un desbordamiento a 320 px.
+
+Con servidor ficticio se probaron:
+- Páginas adicionales de rutas y micros.
+- Ruta sin trazado o unidades.
+- Registros retirados: 404.
+- Errores 500.
+- Respuestas incompletas.
+- Conexión interrumpida.
+- Búsqueda lenta reemplazada por otra.
+- Texto HTML mostrado literalmente.
+
+Los servidores ficticios se cerraron después de las pruebas.
+No confundir estos resultados con pruebas con usuarios reales.
+
+TRABAJO ACTUAL: T058
+
+Tarea:
+https://github.com/tuChaski/go-tacna-frontend/issues/94
+
+Rama prevista y posteriormente observada:
+feature/T058-visor-mapa
+
+Destino:
+develop
+
+Hasta este punto se preparó el plan y el prompt de T058. No dar por implementado el nuevo visor.
+
+DECISION TECNOLOGICA ACTUALIZADA
+
+Elegimos expresamente:
+- Web: MapLibre GL JS.
+- Móvil: react-native-maps.
+
+La propuesta anterior de usar Leaflet para el visor público fue reemplazada por esta decisión.
+
+Para T058:
+- Integrar MapLibre GL JS en la web pública.
+- Conservar Leaflet donde siga usándose en administración.
+- No modificar la aplicación móvil.
+- Revisar versiones y dependencias antes de instalar.
+- Elegir y documentar la fuente de estilos y teselas, sus condiciones y atribución.
+- No asumir que MapLibre incluye automáticamente un proveedor de mapas de producción.
+
+En móvil ya se encontró react-native-maps instalado y una decisión documentada para usarlo con Expo. Su compatibilidad y funcionamiento deben verificarse en el dispositivo correspondiente; no afirmar que eso ya quedó probado.
+
+ALCANCE ESPERADO DE T058
+
+- Sustituir el esquema de recorrido por un mapa geográfico interactivo de Tacna.
+- Conservar toda la consulta de T057.
+- Permitir zoom, desplazamiento y volver a ver todo el recorrido.
+- Dibujar geometría real y validada.
+- Ajustar la cámara al elegir una ruta.
+- Conservar el movimiento y zoom manual.
+- Sincronizar selección de tarjetas y marcadores.
+- Mostrar micros solo cuando exista una posición pública válida y autorizada.
+- Informar cuando falte ubicación.
+- Mostrar fecha de posición cuando exista.
+- No inventar posiciones, aforo, ETA ni movimiento.
+- No anunciar seguimiento en vivo.
+
+T060 será la tarea de actualización por WebSocket.
+
+DISEÑO
+
+Quiero una pantalla estética, moderna y fácil de entender:
+- Azul de marca.
+- Tipografía Inter.
+- Tarjetas claras.
+- Controles grandes.
+- Textos sencillos.
+- Buen contraste.
+- Selección visible.
+- Diseño adaptable a móvil y escritorio.
+- Navegación por teclado.
+- Sin desplazamiento horizontal.
+- Animaciones discretas y respeto a reducción de movimiento.
+
+Si falla el mapa o WebGL, el buscador, listado y detalle deben seguir disponibles.
+
+FIGMA
+
+Archivo:
+https://www.figma.com/design/Lw9Pbwc65lMKyjsW5IWZaD/go-tacna?node-id=73-1148
+
+En T057 se revisaron:
+- 70:16423: selector de rutas.
+- 70:16584: detalle del micro.
+
+Usar Figma como referencia visual, adaptando el diseño a web y a los datos realmente disponibles. No copiar cifras de ETA ni ubicaciones del prototipo como datos reales.
+
+SIGUIENTE PASO
+
+El prompt detallado de T058 ya fue entregado y se conserva íntegro al final de este archivo. Antes de implementar debe recuperarse la base retirada de develop, siguiendo RECUPERAR_BASE_T058.txt.
+
+Primero revisa el estado actual del repositorio, GitHub y Figma. Después implementa por fases, comenta las decisiones en español, realiza las pruebas y documenta resultados y pendientes.
+
+Al finalizar, no hagas commit ni push: entrégame los comandos para ejecutarlos manualmente y la propuesta de PR hacia develop.
+
+======================================================================
+PROMPT COMPLETO DE T058 ENTREGADO POR ALEX
+======================================================================
+
+Implementa T058 de Go Tacna: visor de mapa interactivo para la web pública.
+
+Repositorio: go-tacna-frontend
+Rama: feature/T058-visor-mapa
+Destino del futuro pull request: develop
+
+TECNOLOGIAS ACORDADAS
+
+- Web: MapLibre GL JS.
+- Aplicación móvil: react-native-maps.
+
+En este trabajo modifica únicamente la web. Conserva Leaflet donde todavía se utilice en el panel administrativo.
+
+OBJETIVO
+
+Una persona debe poder entrar sin cuenta, buscar su ruta y entender fácilmente su recorrido sobre un mapa real de Tacna.
+
+El flujo principal será:
+
+Buscar ruta → Seleccionar ruta → Consultar micros → Abrir detalle.
+
+Conserva las funciones de T057: búsqueda, paginación, selección y detalle de unidades, estados de carga y recuperación de errores.
+
+1. REVISION INICIAL
+
+Antes de modificar archivos:
+
+- Confirma la rama y revisa las instrucciones del repositorio.
+- Comprueba que los cambios aprobados de T057 estén presentes. Si falta algún avance, informa antes de reemplazar archivos.
+- Revisa T058 y sus dependencias en GitHub:
+  https://github.com/tuChaski/go-tacna-frontend/issues/94
+- Revisa el diseño de Go Tacna en Figma:
+  https://www.figma.com/design/Lw9Pbwc65lMKyjsW5IWZaD/go-tacna?node-id=73-1148
+- Examina los componentes, servicios y estilos existentes.
+- Verifica los campos y respuestas reales de los endpoints públicos.
+- Revisa el pendiente de privacidad documentado en T057.
+- Presenta un plan breve con los archivos afectados y las limitaciones encontradas antes de implementar.
+
+No modificar el backend sin explicar la necesidad y coordinar ese cambio.
+
+2. DISEÑO VISUAL
+
+Crear una interfaz estética, moderna y fácil de entender, coherente con Figma y con la identidad de Go Tacna.
+
+Usar:
+
+- Azul de marca y superficies claras.
+- Tipografía Inter con tamaños legibles.
+- Tarjetas con bordes suaves y espacios suficientes.
+- Iconos comprensibles y textos breves en español.
+- Una ruta seleccionada claramente destacada.
+- Marcadores de micros fáciles de reconocer.
+- Estados identificados con texto e iconos, además del color.
+
+En escritorio:
+- Organizar el buscador y las tarjetas junto al mapa.
+- Dar espacio suficiente al recorrido.
+- Mantener visible la información de la selección.
+
+En celular:
+- Adaptar mapa, buscador y tarjetas sin superponer controles.
+- Evitar que el mapa ocupe toda la pantalla e impida consultar las unidades.
+- Mantener botones cómodos para tocar.
+- Evitar desplazamiento horizontal de toda la página.
+
+No añadir controles decorativos sin función. Usar animaciones discretas y respetar la preferencia de reducir movimiento.
+
+3. MAPA CON MAPLIBRE GL JS
+
+- Instalar una versión compatible con el proyecto y documentar la elección.
+- Integrar MapLibre con React siguiendo las convenciones existentes.
+- Cargar el mapa cuando sea necesario para evitar aumentar innecesariamente la carga inicial.
+- Elegir y documentar la fuente de estilos y teselas.
+- Verificar cobertura de Tacna, condiciones de uso, atribución y posibles requisitos de claves.
+- No utilizar servicios de demostración como una solución de producción sin revisar sus condiciones.
+- Mantener visible la atribución correspondiente.
+
+El mapa debe permitir:
+- Ver Tacna como ubicación inicial.
+- Acercar y alejar.
+- Desplazarse por las calles.
+- Ver el recorrido completo de una ruta.
+- Volver al recorrido mediante un botón claro.
+- Adaptarse a cambios de tamaño y orientación.
+
+Priorizar una vista inicial clara y fácil de leer. No añadir edificios 3D, inclinaciones o efectos pesados si no aportan a la consulta de rutas.
+
+Crear y destruir correctamente el mapa, sus eventos, marcadores y recursos. Evitar instancias duplicadas, incluso durante el desarrollo con React StrictMode.
+
+4. RECORRIDOS Y CAMARA
+
+- Dibujar únicamente la geometría registrada por la API.
+- Validar tipo de geometría, coordenadas y cantidad mínima de puntos.
+- Respetar el orden GeoJSON: longitud, latitud.
+- Ajustar la cámara al seleccionar una ruta.
+- Conservar el zoom y desplazamiento manual mientras se consulta esa ruta.
+- Evitar recentrar el mapa en cada render.
+- Retirar las capas y selecciones anteriores al cambiar de ruta.
+- No mezclar respuestas de rutas distintas.
+
+Si una ruta no tiene trazado:
+- Informarlo claramente.
+- Mantener disponible su consulta y sus unidades.
+- No inventar un recorrido.
+
+5. MICROS Y DETALLES
+
+- Mantener una sola ruta y un solo micro seleccionados a la vez.
+- Sincronizar la selección entre tarjetas y marcadores.
+- Abrir el mismo detalle tanto desde la tarjeta como desde el mapa.
+- Conservar placa, empresa, ruta, estado y capacidad de T057.
+- Diferenciar capacidad máxima de ocupación actual.
+
+Mostrar un marcador de micro únicamente cuando exista una posición pública válida y autorizada.
+
+Si no hay ubicación:
+- Conservar la tarjeta de la unidad.
+- Mostrar “Ubicación no disponible”.
+- No colocar el micro en un punto inventado.
+
+Cuando exista una posición:
+- Mostrar su fecha de actualización.
+- Revisar si hay una política de vigencia definida.
+- No afirmar que está actualizada sin respaldo.
+- No desplazar automáticamente el mapa cada vez que cambien otros datos.
+
+T060 implementará WebSocket. En T058 no simular movimiento ni anunciar seguimiento en vivo.
+
+6. PROTECCION Y MANEJO DE DATOS
+
+- Permitir la consulta sin cuenta.
+- Reutilizar el cliente público de T057.
+- No adjuntar tokens administrativos a las consultas públicas.
+- No enviar credenciales a proveedores de mapas, estilos o teselas.
+- No guardar secretos en variables VITE_*, código, consola o documentación.
+- Usar fuentes de mapas configuradas y verificadas.
+- Validar las respuestas antes de mostrarlas.
+- Renderizar nombres y etiquetas como texto, sin insertar HTML recibido.
+- Cancelar solicitudes al cambiar de selección o abandonar la pantalla.
+- Descartar respuestas antiguas.
+- Evitar consultas repetidas innecesarias y reintentos infinitos.
+
+Mantener un modelo público mínimo:
+- Identificador y datos necesarios de la ruta.
+- Placa y estado de la unidad.
+- Coordenadas y fecha de posición, únicamente si están autorizadas.
+
+No incorporar DNI, correo, teléfono del conductor ni historial GPS innecesario.
+
+Comprobar si backend corrigió la exposición de datos personales detectada en T057. Ocultar campos en la pantalla no resuelve su presencia en la respuesta de red.
+
+No exigir la ubicación personal del visitante para consultar rutas. Cualquier función opcional de ubicación debe activarse mediante una acción explícita y explicar para qué se utiliza.
+
+7. ERRORES Y RECUPERACION
+
+Diferenciar claramente:
+
+- Consulta en curso.
+- Ruta sin trazado.
+- Ruta sin micros.
+- Micro sin posición.
+- Registro retirado.
+- Error de API.
+- Fallo al cargar estilos o teselas.
+- Navegador sin soporte gráfico suficiente.
+
+Si falla el mapa:
+- Mantener funcionando el buscador, listado y detalle.
+- Mostrar un mensaje comprensible y una acción de recuperación.
+- Evitar una pantalla vacía o bloqueada.
+- No reemplazar datos reales por ejemplos de demostración.
+
+8. PRUEBAS
+
+Funcionamiento:
+- Acceso como invitado.
+- Búsqueda y selección de ruta.
+- Enlace directo desde T057.
+- Dibujo correcto del recorrido.
+- Zoom, desplazamiento y botón para ver todo el recorrido.
+- Cambio de ruta sin dejar capas anteriores.
+- Selección de micro desde tarjeta y marcador.
+- Apertura y cierre del detalle con devolución del foco.
+
+Datos y errores:
+- Geometría ausente o incompatible.
+- Coordenadas inválidas o fuera de rango.
+- Micro sin posición o sin fecha válida.
+- Ruta sin unidades.
+- Respuestas 404 y 500.
+- Respuesta incompleta.
+- Conexión lenta, caída y recuperación.
+- Fallo de estilos o teselas.
+- Ausencia o pérdida del contexto WebGL.
+- Respuestas fuera de orden.
+- Cambios rápidos entre rutas.
+- Entrada y salida repetidas sin duplicar mapas ni eventos.
+
+Diseño y accesibilidad:
+- Revisar anchos de 320, 390, 768 y 1440 píxeles.
+- Comprobar cambios de orientación y tamaño.
+- Revisar textos largos y varias unidades.
+- Verificar controles, atribución, contraste y foco.
+- Probar teclado y confirmar que el mapa no atrapa el foco.
+- Mantener una alternativa de consulta mediante el listado.
+- Comprobar que no hay desbordamiento horizontal.
+
+Regresión:
+- Ejecutar lint y compilación.
+- Ejecutar las pruebas existentes relacionadas.
+- Añadir pruebas relevantes para la lógica nueva.
+- Comprobar que T057, autenticación, renovación de sesión y panel administrativo siguen funcionando.
+
+Utilizar datos ficticios o transporte controlado para provocar errores. No alterar registros existentes. Distinguir estas pruebas de las realizadas contra la API real.
+
+9. COMENTARIOS Y DOCUMENTACION
+
+- Añadir comentarios en español que expliquen decisiones, validaciones y limpieza de recursos.
+- Evitar comentarios que solo repitan el código.
+- Documentar la configuración del proveedor de mapas.
+- Registrar pruebas realizadas, resultados y pendientes.
+- Diferenciar pruebas automatizadas, API y revisión visual.
+- No afirmar que hubo pruebas con personas reales.
+- Comunicar avances y bloqueos durante la implementación.
+- No declarar T058 completa si quedan requisitos necesarios sin verificar.
+
+10. GIT Y ENTREGA
+
+Yo ejecutaré manualmente los comandos de Git.
+
+No crear ni cambiar ramas, hacer commits, push, merges ni pull requests por mi cuenta. No descartar ni sobrescribir cambios ajenos.
+
+Al finalizar, entregarme:
+
+- Resumen sencillo de lo implementado.
+- Enlace local para revisar la pantalla.
+- Archivos de documentación y pruebas.
+- Limitaciones y pendientes.
+- Comandos exactos para revisar y añadir los archivos de T058.
+- Mensaje de commit según las convenciones del proyecto.
+- Comando de push.
+- Título y descripción del PR hacia develop, incluyendo las pruebas realizadas.

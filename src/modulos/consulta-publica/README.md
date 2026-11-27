@@ -1,5 +1,10 @@
 # T057 · Consulta pública de rutas y micros
 
+> Continuidad: T058 sustituye el esquema SVG por un visor MapLibre. El alcance,
+> proveedor, pruebas y pendientes actuales están en [T058.md](T058.md).
+> Este README conserva la evidencia histórica de T057; sus resultados no se
+> presentan como una ejecución nueva de T058.
+
 Fecha de revisión: 26/11/2026. Rama: `feature/T057-consulta-publica`.
 El PR se dirige a `develop`. No se modifica backend ni la aplicación Android.
 
