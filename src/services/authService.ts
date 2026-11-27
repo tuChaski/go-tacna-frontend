@@ -1,28 +1,27 @@
-import api from './api';
+import api, { cerrarSesionRemota } from './api';
 import type { AuthResponse, LoginCredentials, User } from '../types/auth';
+import { adaptarPerfil, adaptarSesion, prepararLogin, prepararRegistro } from './adaptador-autenticacion';
+import type { DatosRegistro } from './adaptador-autenticacion';
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/login', credentials);
-    return response.data;
+    // El adaptador evita propagar nombres y envoltorios de Laravel a las pantallas.
+    const response = await api.post<unknown>('/auth/login', prepararLogin(credentials));
+    return adaptarSesion(response.data);
   },
 
-  async register(data: { nombre: string; email: string; contrasena: string }): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/register', data);
-    return response.data;
+  async register(data: DatosRegistro): Promise<AuthResponse> {
+    const response = await api.post<unknown>('/auth/register', prepararRegistro(data));
+    return adaptarSesion(response.data);
   },
 
   async logout(): Promise<void> {
-    try {
-      await api.post('/auth/logout');
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    }
+    // Cancela renovaciones y limpia el dispositivo antes de esperar a la API.
+    await cerrarSesionRemota();
   },
 
-  async getProfile(): Promise<User> {
-    const response = await api.get<User>('/auth/me');
-    return response.data;
+  async getProfile(signal?: AbortSignal): Promise<User> {
+    const response = await api.get<unknown>('/auth/me', { signal });
+    return adaptarPerfil(response.data);
   },
 };
