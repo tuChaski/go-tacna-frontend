@@ -7,7 +7,7 @@ import { destinoSesion } from '../src/modulos/autenticacion/destino-sesion.ts';
 
 const usuario = { id: 1, nombre: 'Cuenta', apellido: 'Ficticia', correo: 'cuenta@example.com', rol: 'admin_general', activo: true };
 const respuesta = (perfil = usuario) => ({ success: true, data: { usuario: perfil, token: 'token-ficticio', tipo: 'bearer' } });
-const alta = { dni: 'DOCUMENTO-DE-PRUEBA', nombre: 'Nombre', apellido: 'Apellido', telefono: '000000000', correo: 'cuenta@example.com', contrasena: 'Clave ficticia 123', confirmacion: 'Clave ficticia 123' };
+const alta = { dni: '12345678', nombre: 'Nombre', apellido: 'Apellido', telefono: '912345678', correo: 'cuenta@example.com', contrasena: 'Clave ficticia 123', confirmacion: 'Clave ficticia 123' };
 
 test('login usa correo y no modifica espacios de la contraseña', () => {
   assert.deepEqual(prepararLogin({ email: ' cuenta@example.com ', contrasena: ' clave ' }), { correo: 'cuenta@example.com', password: ' clave ' });
@@ -53,11 +53,24 @@ test('alta válida, confirmación y política de mínimo 8', () => {
   assert.ok(validarAlta({ ...alta, contrasena: 'corta' }).contrasena);
   assert.ok(validarAlta({ ...alta, confirmacion: 'distinta' }).confirmacion);
 });
-test('alta limita longitudes publicadas y no presupone DNI de 8 dígitos', () => {
-  assert.deepEqual(validarAlta({ ...alta, dni: 'DOC-X' }), {});
-  for (const [campo, longitud] of [['dni', 21], ['nombre', 121], ['apellido', 121], ['telefono', 31], ['correo', 151]]) {
+test('alta limita longitudes publicadas de nombre, apellido y correo', () => {
+  for (const [campo, longitud] of [['nombre', 121], ['apellido', 121], ['correo', 151]]) {
     assert.ok(validarAlta({ ...alta, [campo]: 'a'.repeat(longitud) })[campo]);
   }
+});
+test('alta exige DNI de exactamente 8 dígitos numéricos', () => {
+  assert.equal(validarAlta({ ...alta, dni: ' 12345678 ' }).dni, undefined);
+  for (const dni of ['123', '1234567', '123456789', 'DOC-X123', '1234567a', '12 34 567']) {
+    assert.match(validarAlta({ ...alta, dni }).dni ?? '', /8 dígitos/, `DNI aceptado indebidamente: ${dni}`);
+  }
+  assert.equal(validarAlta({ ...alta, dni: '   ' }).dni, 'Completa este campo.');
+});
+test('alta exige teléfono de 9 dígitos que empiece con 9', () => {
+  assert.equal(validarAlta({ ...alta, telefono: '987654321' }).telefono, undefined);
+  for (const telefono of ['99', '91234567', '9123456789', '812345678', '052123456', '9123-4567', '+51912345']) {
+    assert.match(validarAlta({ ...alta, telefono }).telefono ?? '', /9 dígitos/, `Teléfono aceptado indebidamente: ${telefono}`);
+  }
+  assert.equal(validarAlta({ ...alta, telefono: '' }).telefono, 'Completa este campo.');
 });
 test('destinos por rol separados del maquetado de desarrollo', () => {
   assert.equal(destinoSesion('admin_general'), '/admin'); assert.equal(destinoSesion('admin_empresa'), '/admin/empresa');

@@ -15,6 +15,14 @@ import { destinoSesion } from './destino-sesion';
 import '@fontsource-variable/inter';
 import './acceso.css';
 
+/** Atributos de los datos personales del alta; los límites siguen las reglas de validarAlta. */
+const camposAlta = {
+  dni: { etiqueta: 'Documento de identidad (DNI)', ejemplo: '12345678', ayuda: 'Obligatorio. 8 dígitos numéricos.', limite: 8, autocompletado: 'off', modoEntrada: 'numeric' },
+  nombre: { etiqueta: 'Nombres', ejemplo: 'Ingresa tus nombres', ayuda: 'Obligatorio.', limite: 120, autocompletado: 'given-name', modoEntrada: 'text' },
+  apellido: { etiqueta: 'Apellidos', ejemplo: 'Ingresa tus apellidos', ayuda: 'Obligatorio.', limite: 120, autocompletado: 'family-name', modoEntrada: 'text' },
+  telefono: { etiqueta: 'Teléfono', ejemplo: '912345678', ayuda: 'Obligatorio. 9 dígitos, empieza con 9.', limite: 9, autocompletado: 'tel', modoEntrada: 'tel' },
+} as const;
+
 export default function InicioSesion({ registro = false }: { registro?: boolean }) {
   const [datos, establecerDatos] = useState<DatosAlta>({ correo: '', contrasena: '', dni: '', nombre: '', apellido: '', telefono: '', confirmacion: '' });
   const [errores, establecerErrores] = useState<ErroresAlta>({});
@@ -129,13 +137,13 @@ export default function InicioSesion({ registro = false }: { registro?: boolean 
           <form ref={formulario} onSubmit={ingresar} noValidate aria-busy={enviando}>
             {registro && (['dni', 'nombre', 'apellido', 'telefono'] as const).map(clave => (
               <div className="acceso-campo" key={clave}>
-                <label htmlFor={`acceso-${clave}`}>{{ dni: 'Documento de identidad (DNI)', nombre: 'Nombres', apellido: 'Apellidos', telefono: 'Teléfono' }[clave]}</label>
-                <input id={`acceso-${clave}`} required disabled={enviando} value={datos[clave]}
-                  autoComplete={{ dni: 'off', nombre: 'given-name', apellido: 'family-name', telefono: 'tel' }[clave]}
-                  type={clave === 'telefono' ? 'tel' : 'text'} maxLength={{ dni: 20, nombre: 120, apellido: 120, telefono: 30 }[clave]}
+                <label htmlFor={`acceso-${clave}`}>{camposAlta[clave].etiqueta}</label>
+                <input id={`acceso-${clave}`} name={clave} placeholder={camposAlta[clave].ejemplo} required disabled={enviando} value={datos[clave]}
+                  autoComplete={camposAlta[clave].autocompletado} inputMode={camposAlta[clave].modoEntrada}
+                  type={clave === 'telefono' ? 'tel' : 'text'} maxLength={camposAlta[clave].limite}
                   aria-invalid={Boolean(errores[clave])} aria-describedby={`acceso-${clave}-ayuda`}
                   onBlur={() => revisar(clave)} onChange={evento => cambiar(clave, evento.target.value)} />
-                <p id={`acceso-${clave}-ayuda`} className={errores[clave] ? 'acceso-error' : 'acceso-ayuda'}>{errores[clave] || 'Obligatorio.'}</p>
+                <p id={`acceso-${clave}-ayuda`} className={errores[clave] ? 'acceso-error' : 'acceso-ayuda'} role={errores[clave] ? 'alert' : undefined}>{errores[clave] || camposAlta[clave].ayuda}</p>
               </div>
             ))}
             <div className="acceso-campo">
@@ -144,7 +152,7 @@ export default function InicioSesion({ registro = false }: { registro?: boolean 
                 autoCapitalize="none" spellCheck={false} placeholder="nombre@empresa.pe" value={datos.correo}
                 aria-invalid={Boolean(errores.correo)} aria-describedby="acceso-correo-ayuda"
                 onChange={evento => cambiar('correo', evento.target.value)} onBlur={() => revisar('correo')} />
-              <p id="acceso-correo-ayuda" className={errores.correo ? 'acceso-error' : 'acceso-ayuda'}>
+              <p id="acceso-correo-ayuda" className={errores.correo ? 'acceso-error' : 'acceso-ayuda'} role={errores.correo ? 'alert' : undefined}>
                 {errores.correo || 'Utiliza el correo de tu cuenta.'}
               </p>
             </div>
@@ -161,15 +169,15 @@ export default function InicioSesion({ registro = false }: { registro?: boolean 
                   {visible ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                 </button>
               </div>
-              <p id="acceso-contrasena-ayuda" className={errores.contrasena ? 'acceso-error' : 'acceso-ayuda'}>
+              <p id="acceso-contrasena-ayuda" className={errores.contrasena ? 'acceso-error' : 'acceso-ayuda'} role={errores.contrasena ? 'alert' : undefined}>
                 {errores.contrasena || (registro ? 'Al menos 8 caracteres.' : visible ? 'La contraseña está visible.' : 'Tu contraseña permanece oculta.')}
               </p>
             </div>
             {registro && <div className="acceso-campo"><label htmlFor="acceso-confirmacion">Confirmar contraseña</label>
-              <input id="acceso-confirmacion" type={visible ? 'text' : 'password'} autoComplete="new-password" required disabled={enviando}
-                value={datos.confirmacion} aria-invalid={Boolean(errores.confirmacion)} aria-describedby="acceso-confirmacion-ayuda"
+              <input id="acceso-confirmacion" name="confirmacion" type={visible ? 'text' : 'password'} autoComplete="new-password" required disabled={enviando}
+                placeholder="Repite tu contraseña" value={datos.confirmacion} aria-invalid={Boolean(errores.confirmacion)} aria-describedby="acceso-confirmacion-ayuda"
                 onChange={evento => cambiar('confirmacion', evento.target.value)} onBlur={() => revisar('confirmacion')} />
-              <p id="acceso-confirmacion-ayuda" className={errores.confirmacion ? 'acceso-error' : 'acceso-ayuda'}>{errores.confirmacion || 'Repite tu contraseña.'}</p></div>}
+              <p id="acceso-confirmacion-ayuda" className={errores.confirmacion ? 'acceso-error' : 'acceso-ayuda'} role={errores.confirmacion ? 'alert' : undefined}>{errores.confirmacion || 'Repite tu contraseña.'}</p></div>}
             <button type="submit" className="acceso-ingresar" disabled={enviando}>{enviando ? 'Enviando…' : registro ? 'Crear cuenta' : 'Iniciar sesión'}<ArrowRight size={19} aria-hidden="true" /></button>
             {mensaje && <p className="acceso-aviso" role="alert">{mensaje}</p>}
             {enviando && <p role="status">Esperando respuesta del servidor…</p>}

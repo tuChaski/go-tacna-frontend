@@ -14,13 +14,24 @@ export interface DatosAlta extends DatosAcceso {
 }
 export type ErroresAlta = Partial<Record<keyof DatosAlta, string>>;
 
-/** Reglas publicadas por RegisterRequest; la confirmación se comprueba solo en UI. */
+/** Formatos de identidad usados en Tacna: DNI peruano y celular nacional. */
+export const PATRON_DNI = /^\d{8}$/;
+export const PATRON_TELEFONO = /^9\d{8}$/;
+export const MENSAJE_DNI = 'El DNI debe tener exactamente 8 dígitos numéricos.';
+export const MENSAJE_TELEFONO = 'El teléfono debe tener 9 dígitos y empezar con 9.';
+
+/** Reglas de RegisterRequest más formato de DNI y teléfono; la confirmación se comprueba solo en UI. */
 export function validarAlta(datos: DatosAlta): ErroresAlta {
   const errores: ErroresAlta = validarAcceso(datos);
-  const limites = { dni: 20, nombre: 120, apellido: 120, telefono: 30 } as const;
+  const limites = { nombre: 120, apellido: 120 } as const;
   for (const clave of Object.keys(limites) as (keyof typeof limites)[]) {
     if (!datos[clave].trim()) errores[clave] = 'Completa este campo.';
     else if (datos[clave].trim().length > limites[clave]) errores[clave] = `Usa como máximo ${limites[clave]} caracteres.`;
+  }
+  const formatos = { dni: [PATRON_DNI, MENSAJE_DNI], telefono: [PATRON_TELEFONO, MENSAJE_TELEFONO] } as const;
+  for (const [clave, [patron, mensaje]] of Object.entries(formatos) as [keyof typeof formatos, readonly [RegExp, string]][]) {
+    if (!datos[clave].trim()) errores[clave] = 'Completa este campo.';
+    else if (!patron.test(datos[clave].trim())) errores[clave] = mensaje;
   }
   if (datos.correo.trim().length > 150) errores.correo = 'Usa como máximo 150 caracteres.';
   if (datos.contrasena.length < 8) errores.contrasena = 'La contraseña debe tener al menos 8 caracteres.';

@@ -31,6 +31,15 @@ export function AccionesRegistro({ recurso, registro, base, alCompletar }: {
     ? `El registro quedará ${activo ? 'inactivo' : 'activo'}. Sus datos y asociaciones se conservarán.`
     : recurso === 'conductores' ? 'Cambia la disponibilidad operativa del conductor. Esto no activa ni desactiva su cuenta de usuario.'
       : 'Selecciona el estado operativo del micro. Si tiene conductor asignado, el servidor también actualizará su estado operativo.';
+  // Bloqueos que el servidor rechazaría con 409; se anticipan con los datos del listado.
+  const microsAsignados = registro.micros_count ?? 0;
+  const bloqueoEliminar = recurso === 'conductores' && registro.micro_actual
+    ? `No se puede eliminar: tiene asignado el micro ${registro.micro_actual.placa}. Primero desasígnalo.`
+    : recurso === 'micros' && registro.estado === 'en_recorrido'
+      ? 'No se puede eliminar un micro que está en recorrido. Finaliza el recorrido primero.'
+      : recurso === 'rutas' && microsAsignados > 0
+        ? `No se puede eliminar: la ruta tiene ${microsAsignados} ${microsAsignados === 1 ? 'micro asignado' : 'micros asignados'}.`
+        : '';
 
   return <>
     <div className="admin-row-actions admin-record-actions" role="group" aria-label={`Acciones de ${nombre}`}>
@@ -44,7 +53,8 @@ export function AccionesRegistro({ recurso, registro, base, alCompletar }: {
         aria-label={`${cambio} ${nombre}`} onClick={() => establecerAccion('estado')}>
         <Power size={16} aria-hidden="true" />{binario ? cambio : 'Estado'}
       </button>
-      <button type="button" className="admin-button admin-delete-outline" aria-label={`Eliminar ${nombre}`} onClick={() => establecerAccion('eliminar')}>
+      <button type="button" className="admin-button admin-delete-outline" aria-label={`Eliminar ${nombre}`}
+        disabled={Boolean(bloqueoEliminar)} title={bloqueoEliminar || undefined} onClick={() => establecerAccion('eliminar')}>
         <Trash2 size={16} aria-hidden="true" />Eliminar
       </button>
     </div>

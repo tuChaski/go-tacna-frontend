@@ -135,7 +135,8 @@ export function GestionRecurso({ recurso, modo, empresaId, base }: { recurso: Re
         </form>
         {listado.data.length ? <div className="admin-table-wrap"><table className="admin-table admin-routes-table admin-management-table"><caption className="admin-small">{nombresRecursos[recurso]} · Página {listado.meta.current_page}</caption>
           <thead><tr><th scope="col">{etiquetas[recurso].singular}</th><th scope="col">{recurso === 'micros' || recurso === 'conductores' ? 'Estado operativo' : 'Estado'}</th><th scope="col">Acciones</th></tr></thead>
-          <tbody>{listado.data.map(fila => <tr key={fila.id}><td><strong className="admin-record-title">{tituloRegistro(recurso, fila)}</strong><span className="admin-record-key">{recurso === 'empresas' ? `RUC: ${fila.ruc ?? 'Sin registrar'}` : fila.usuario?.correo ?? (fila.ruta?.nombre_ruta ? `Ruta: ${fila.ruta.nombre_ruta}` : `ID ${fila.id}`)}</span></td>
+          <tbody>{listado.data.map(fila => <tr key={fila.id}><td><strong className="admin-record-title">{tituloRegistro(recurso, fila)}</strong><span className="admin-record-key">{recurso === 'empresas' ? `RUC: ${fila.ruc ?? 'Sin registrar'}` : fila.usuario?.correo ?? (fila.ruta?.nombre_ruta ? `Ruta: ${fila.ruta.nombre_ruta}` : `ID ${fila.id}`)}</span>
+            {recurso === 'conductores' && fila.micro_actual?.placa && <span className="admin-record-key">Micro: {fila.micro_actual.placa}</span>}</td>
             <td><span className={`admin-status-badge admin-status-${presentacionEstado(recurso, fila).tono}`}>{presentacionEstado(recurso, fila).nombre}</span></td>
             <td><AccionesRegistro recurso={recurso} registro={fila} base={base} alCompletar={({ eliminado, aviso: mensaje }) => {
               establecerAviso(mensaje);
@@ -158,13 +159,11 @@ export function GestionRecurso({ recurso, modo, empresaId, base }: { recurso: Re
     {(aviso || avisoNavegacion) && <p className="admin-pending" role="status">{aviso || avisoNavegacion}</p>}
     <section className="admin-card admin-detail"><dl>{datosDetalle.map(([etiqueta, valor]) => <div key={etiqueta}><dt>{etiqueta}</dt><dd>{valor ?? 'Sin asignar'}</dd></div>)}</dl>
       <div className="admin-trazado-herramientas"><Link className="admin-button admin-outline" to={base}>Volver al listado</Link><Link className="admin-button" to={`${base}/${registro.id}/editar`}>Editar</Link></div>
-      {recurso === 'conductores' && <p className="admin-small admin-muted">El estado operativo no activa ni desactiva la cuenta. Eliminar borra el perfil de conductor; la cuenta de usuario permanece. Primero debe desasignarse su micro.</p>}
     </section>
     {recurso === 'rutas' && registro.trazado_ruta && <section className="admin-card admin-form"><h2>Recorrido guardado</h2><MapaRuta puntos={registro.trazado_ruta.coordinates.map(([longitud, latitud]) => ({ latitud, longitud }))} /></section>}
     {recurso === 'empresas' && <section className="admin-card admin-form"><h2>Cuentas administrativas</h2>
       {registro.administradores?.length ? registro.administradores.map(perfil => <CuentaVinculada key={perfil.id} cuenta={perfil.usuario} enlace={`${base}/${registro.id}/cuentas/${perfil.usuario_id}/editar`} />) : <p>Esta empresa todavía no tiene cuentas administrativas vinculadas.</p>}
       <Link className="admin-button" to={`${base}/${registro.id}/cuentas/nueva`}>Crear cuenta administrativa</Link>
-      <p className="admin-small admin-muted">Una empresa con cuentas, rutas, micros o conductores vinculados no puede eliminarse. Puedes desactivarla para conservar su información.</p>
     </section>}
   </>;
 }

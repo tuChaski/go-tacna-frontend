@@ -27,8 +27,21 @@ function InteraccionesMapa({ puntos, seleccionando, alSeleccionar, revision }: P
   useEffect(() => {
     if (ultimaRevision.current === revision) return;
     ultimaRevision.current = revision;
-    if (puntos.length) mapa.fitBounds(puntos.map(punto => [punto.latitud, punto.longitud]), { padding: [36, 36], maxZoom: 15 });
+    // Sin animación: una transición pendiente fallaría al desmontar el mapa (QA-02).
+    if (puntos.length) mapa.fitBounds(puntos.map(punto => [punto.latitud, punto.longitud]), { padding: [36, 36], maxZoom: 15, animate: false });
   }, [mapa, puntos, revision]);
+
+  // Detiene desplazamientos activos al salir. Si MapContainer ya retiró el mapa
+  // (evento unload), no se toca: sus paneles ya no existen.
+  useEffect(() => {
+    let retirado = false;
+    const alRetirar = () => { retirado = true; };
+    mapa.on('unload', alRetirar);
+    return () => {
+      mapa.off('unload', alRetirar);
+      if (!retirado) mapa.stop();
+    };
+  }, [mapa]);
 
   // Vuelve a calcular el tamaño al cambiar de columnas o de orientación móvil.
   useEffect(() => {
@@ -82,6 +95,6 @@ export function MapaRuta({ puntos, seleccionando = false, alSeleccionar }: Propi
     <button type="button" className="admin-button admin-outline" disabled={!puntos.length} onClick={() => establecerRevision(actual => actual + 1)}>Ver recorrido completo</button>
     {errorBase && <div className="admin-info-note" role="status"><p>No se pudo cargar parte del mapa. Revisa tu conexión. Tus puntos siguen disponibles.</p>
       <button type="button" className="admin-button admin-outline" onClick={() => { establecerErrorBase(false); establecerIntento(actual => actual + 1); }}>Reintentar mapa</button></div>}
-    <p className="admin-small admin-muted">La línea une los puntos en su orden. Añade puntos en curvas y cruces para seguir las calles.</p>
+    {alSeleccionar && <p className="admin-small admin-muted">La línea une los puntos en su orden. Añade puntos en curvas y cruces para seguir las calles.</p>}
   </div>;
 }
