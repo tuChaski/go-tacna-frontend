@@ -1,11 +1,11 @@
 /**
- * Pantalla común de acceso de administradores, basada en T053 y preparada para T056.
+ * Pantalla común de acceso y registro de pasajeros, basada en T053 y preparada para T056.
  * Conserva los campos solo en memoria; los envía al servicio sin persistir contraseñas.
  * El destino se obtiene del usuario devuelto por el servidor, nunca de un selector.
  */
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { ArrowLeft, ArrowRight, Building2, BusFront, Eye, EyeOff, Route, ShieldCheck, Users } from 'lucide-react';
+import { IconoPublico } from '../publico/IconoPublico';
 import { validarAcceso, validarAlta } from './formulario-acceso';
 import type { DatosAlta, ErroresAlta } from './formulario-acceso';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
@@ -17,10 +17,10 @@ import './acceso.css';
 
 /** Atributos de los datos personales del alta; los límites siguen las reglas de validarAlta. */
 const camposAlta = {
-  dni: { etiqueta: 'Documento de identidad (DNI)', ejemplo: '12345678', ayuda: 'Obligatorio. 8 dígitos numéricos.', limite: 8, autocompletado: 'off', modoEntrada: 'numeric' },
-  nombre: { etiqueta: 'Nombres', ejemplo: 'Ingresa tus nombres', ayuda: 'Obligatorio.', limite: 120, autocompletado: 'given-name', modoEntrada: 'text' },
-  apellido: { etiqueta: 'Apellidos', ejemplo: 'Ingresa tus apellidos', ayuda: 'Obligatorio.', limite: 120, autocompletado: 'family-name', modoEntrada: 'text' },
-  telefono: { etiqueta: 'Teléfono', ejemplo: '912345678', ayuda: 'Obligatorio. 9 dígitos, empieza con 9.', limite: 9, autocompletado: 'tel', modoEntrada: 'tel' },
+  dni: { etiqueta: 'Documento de identidad (DNI)', ejemplo: '12345678', ayuda: '8 dígitos numéricos.', limite: 8, autocompletado: 'off', modoEntrada: 'numeric' },
+  nombre: { etiqueta: 'Nombres', ejemplo: 'Ingresa tus nombres', ayuda: '', limite: 120, autocompletado: 'given-name', modoEntrada: 'text' },
+  apellido: { etiqueta: 'Apellidos', ejemplo: 'Ingresa tus apellidos', ayuda: '', limite: 120, autocompletado: 'family-name', modoEntrada: 'text' },
+  telefono: { etiqueta: 'Teléfono', ejemplo: '912345678', ayuda: '9 dígitos, empieza con 9.', limite: 9, autocompletado: 'tel', modoEntrada: 'tel' },
 } as const;
 
 export default function InicioSesion({ registro = false }: { registro?: boolean }) {
@@ -64,7 +64,7 @@ export default function InicioSesion({ registro = false }: { registro?: boolean 
   }
 
   function enfocarError(siguientes: ErroresAlta) {
-    const orden: (keyof DatosAlta)[] = registro ? ['dni', 'nombre', 'apellido', 'telefono', 'correo', 'contrasena', 'confirmacion'] : ['correo', 'contrasena'];
+    const orden: (keyof DatosAlta)[] = registro ? ['nombre', 'apellido', 'dni', 'telefono', 'correo', 'contrasena', 'confirmacion'] : ['correo', 'contrasena'];
     const primerError = orden.find(clave => siguientes[clave]);
     if (primerError) {
       if (bloqueo.current) enfoquePendiente.current = primerError;
@@ -102,40 +102,40 @@ export default function InicioSesion({ registro = false }: { registro?: boolean 
     <button onClick={retrySession}>Reintentar</button><button onClick={() => void logout()}>Descartar sesión local</button></main>;
 
   return (
-    <main className="acceso">
+    <main className={`acceso ${registro ? 'acceso-registro' : 'acceso-login'}`}>
       {/* Presentación adaptable: las capacidades son del producto, no datos operativos. */}
       <section className="acceso-presentacion" aria-labelledby="acceso-presentacion-titulo">
         <a className="acceso-marca" href="/" aria-label="Go Tacna, volver al inicio">
-          <span className="acceso-marca-icono"><BusFront size={26} aria-hidden="true" /></span>Go Tacna
+          <span className="acceso-marca-icono"><IconoPublico nombre="bus" tamano={24} /></span>Go Tacna
         </a>
         <div className="acceso-propuesta">
           <span className="acceso-etiqueta">{registro ? 'Cuenta de pasajero' : 'Acceso web'}</span>
-          <h2 id="acceso-presentacion-titulo">{registro ? 'Tu viaje empieza aquí.' : <>Tu flota,<br /> en un solo lugar.</>}</h2>
-          <p>{registro ? 'Crea tu cuenta para acceder a los servicios de Go Tacna.' : 'Gestiona rutas, micros y conductores desde un espacio organizado para tu empresa.'}</p>
+          <h2 id="acceso-presentacion-titulo">{registro ? 'Tu viaje empieza aquí.' : <>Tu ciudad,<br /> más cerca.</>}</h2>
+          <p>{registro ? 'Crea tu cuenta para acceder a los servicios de Go Tacna.' : 'Accede a tu cuenta de pasajero, empresa o administración con tus credenciales.'}</p>
           {!registro && <div className="acceso-capacidades" aria-label="Módulos administrativos">
-            <span><Route size={21} aria-hidden="true" />Rutas</span>
-            <span><BusFront size={21} aria-hidden="true" />Micros</span>
-            <span><Users size={21} aria-hidden="true" />Conductores</span>
+            <span><IconoPublico nombre="ruta" tamano={20} />Rutas</span>
+            <span><IconoPublico nombre="bus" tamano={20} />Micros</span>
+            <span><IconoPublico nombre="personas" tamano={20} />Conductores</span>
           </div>}
         </div>
-        <p className="acceso-privacidad"><ShieldCheck size={22} aria-hidden="true" />{registro ? 'Usa tus credenciales para acceder a tu cuenta.' : 'Cada empresa trabaja con su propia información.'}</p>
+        <p className="acceso-privacidad"><IconoPublico nombre="privacidad" tamano={20} />{registro ? 'Usa tus credenciales para acceder a tu cuenta.' : 'Acceso según el rol de tu cuenta.'}</p>
       </section>
 
       <section className="acceso-contenido" aria-labelledby="acceso-titulo">
-        <a className="acceso-volver" href="/"><ArrowLeft size={17} aria-hidden="true" />Volver al inicio</a>
+        <a className="acceso-volver" href="/"><IconoPublico nombre="anterior" tamano={16} />Volver al inicio</a>
         <div className="acceso-tarjeta">
-          <span className="acceso-simbolo"><Building2 size={25} aria-hidden="true" /></span>
+          <span className="acceso-simbolo"><IconoPublico nombre="pasajero" tamano={24} /></span>
           <header>
             <p className="acceso-sobretitulo">{registro ? 'Registro de pasajeros' : 'Acceso a Go Tacna'}</p>
             <h1 id="acceso-titulo">{registro ? 'Crear cuenta' : 'Iniciar sesión'}</h1>
-            <p>{registro ? 'Completa tus datos. Las cuentas administrativas las crea el administrador general.' : 'Ingresa con el correo y la contraseña de tu cuenta.'}</p>
+            <p>{registro ? 'Completa tus datos para crear tu cuenta de pasajero. Todos los campos son obligatorios.' : 'Ingresa con el correo y la contraseña de tu cuenta.'}</p>
           </header>
 
           {/* Validación propia con noValidate para mostrar mensajes consistentes y
               asociarlos al campo mediante aria-describedby, tanto con ratón como teclado. */}
           {typeof ubicacion.state?.aviso === 'string' && <p className="acceso-aviso" role="status">{ubicacion.state.aviso}</p>}
           <form ref={formulario} onSubmit={ingresar} noValidate aria-busy={enviando}>
-            {registro && (['dni', 'nombre', 'apellido', 'telefono'] as const).map(clave => (
+            {registro && (['nombre', 'apellido', 'dni', 'telefono'] as const).map(clave => (
               <div className="acceso-campo" key={clave}>
                 <label htmlFor={`acceso-${clave}`}>{camposAlta[clave].etiqueta}</label>
                 <input id={`acceso-${clave}`} name={clave} placeholder={camposAlta[clave].ejemplo} required disabled={enviando} value={datos[clave]}
@@ -146,10 +146,10 @@ export default function InicioSesion({ registro = false }: { registro?: boolean 
                 <p id={`acceso-${clave}-ayuda`} className={errores[clave] ? 'acceso-error' : 'acceso-ayuda'} role={errores[clave] ? 'alert' : undefined}>{errores[clave] || camposAlta[clave].ayuda}</p>
               </div>
             ))}
-            <div className="acceso-campo">
+            <div className="acceso-campo acceso-campo-completo">
               <label htmlFor="acceso-correo">Correo electrónico</label>
               <input id="acceso-correo" name="email" type="email" autoComplete={registro ? 'email' : 'username'} required disabled={enviando}
-                autoCapitalize="none" spellCheck={false} placeholder="nombre@empresa.pe" value={datos.correo}
+                autoCapitalize="none" spellCheck={false} placeholder="nombre@correo.pe" value={datos.correo}
                 aria-invalid={Boolean(errores.correo)} aria-describedby="acceso-correo-ayuda"
                 onChange={evento => cambiar('correo', evento.target.value)} onBlur={() => revisar('correo')} />
               <p id="acceso-correo-ayuda" className={errores.correo ? 'acceso-error' : 'acceso-ayuda'} role={errores.correo ? 'alert' : undefined}>
@@ -166,7 +166,7 @@ export default function InicioSesion({ registro = false }: { registro?: boolean 
                 <button className="acceso-mostrar" type="button" aria-controls="acceso-contrasena"
                   aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={visible}
                   onClick={() => establecerVisible(actual => !actual)}>
-                  {visible ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
+                  {visible ? <IconoPublico nombre="visible" tamano={20} /> : <IconoPublico nombre="visible" tamano={20} />}
                 </button>
               </div>
               <p id="acceso-contrasena-ayuda" className={errores.contrasena ? 'acceso-error' : 'acceso-ayuda'} role={errores.contrasena ? 'alert' : undefined}>
@@ -178,7 +178,7 @@ export default function InicioSesion({ registro = false }: { registro?: boolean 
                 placeholder="Repite tu contraseña" value={datos.confirmacion} aria-invalid={Boolean(errores.confirmacion)} aria-describedby="acceso-confirmacion-ayuda"
                 onChange={evento => cambiar('confirmacion', evento.target.value)} onBlur={() => revisar('confirmacion')} />
               <p id="acceso-confirmacion-ayuda" className={errores.confirmacion ? 'acceso-error' : 'acceso-ayuda'} role={errores.confirmacion ? 'alert' : undefined}>{errores.confirmacion || 'Repite tu contraseña.'}</p></div>}
-            <button type="submit" className="acceso-ingresar" disabled={enviando}>{enviando ? 'Enviando…' : registro ? 'Crear cuenta' : 'Iniciar sesión'}<ArrowRight size={19} aria-hidden="true" /></button>
+            <button type="submit" className="acceso-ingresar" disabled={enviando}>{enviando ? 'Enviando…' : registro ? 'Crear cuenta' : 'Iniciar sesión'}<IconoPublico nombre="avanzar" tamano={20} /></button>
             {mensaje && <p className="acceso-aviso" role="alert">{mensaje}</p>}
             {enviando && <p role="status">Esperando respuesta del servidor…</p>}
           </form>

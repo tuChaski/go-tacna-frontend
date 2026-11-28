@@ -1,6 +1,9 @@
 /** Entrada exclusiva de QA local. Vite no la incluye en el build de producción.
  * No se importa desde la aplicación ni se usa como respaldo de una API caída. */
 import { StrictMode, useState } from 'react';
+import { MemoryRouter } from 'react-router-dom';
+import { Inicio } from '../src/modulos/inicio/Inicio';
+import InicioSesion from '../src/modulos/autenticacion/InicioSesion';
 import { createRoot } from 'react-dom/client';
 import { ConsultaPublica } from '../src/modulos/consulta-publica/ConsultaPublica';
 import { AuthContext } from '../src/context/auth-context';
@@ -63,21 +66,32 @@ function micros(rutaId: number) {
     empresa: rutas[0].empresa, ruta: { id: rutaId, activo: true },
   }));
 }
+const consultas: { search: string; page: number; abortada: boolean }[] = [];
+const catalogo = new URLSearchParams(location.search).get('catalogo');
+let fallarCatalogo = catalogo === 'error';
+window.addEventListener('qa-restaurar-api', () => { fallarCatalogo = false; });
 apiPublica.defaults.adapter = async config => {
+  const consulta = config.url === '/rutas' ? { search: String(config.params?.search ?? ''), page: Number(config.params?.page ?? 1), abortada: false } : null;
+  if (consulta) consultas.push(consulta);
+  document.documentElement.dataset.consultas = JSON.stringify(consultas);
   const signal = config.signal;
   const params = config.params ?? {};
   const busqueda = String(params.search ?? '');
   await new Promise(resolve => window.setTimeout(resolve, busqueda === 'lenta' ? 1600 : 40));
-  if (signal?.aborted) throw new Error('Solicitud ficticia cancelada');
+  if (signal?.aborted) {
+    if (consulta) consulta.abortada = true;
+    document.documentElement.dataset.consultas = JSON.stringify(consultas);
+    throw new Error('Solicitud ficticia cancelada');
+  }
   if (busqueda === 'red') throw new TypeError('Conexión ficticia interrumpida');
   const error = (status: number): never => { throw { isAxiosError: true, response: { status }, message: 'Error ficticio controlado' }; };
-  if (busqueda === 'error500') error(500);
+  if (busqueda === 'error500' || fallarCatalogo && config.url === '/rutas') error(500);
   const paginar = (data: unknown[]) => {
     const pagina = Number(params.page ?? 1), tamano = Number(params.per_page ?? 8);
     return { success: true, data: data.slice((pagina - 1) * tamano, pagina * tamano), meta: { current_page: pagina, last_page: Math.max(1, Math.ceil(data.length / tamano)), total: data.length } };
   };
   let data: unknown;
-  if (config.url === '/rutas') data = busqueda === 'incompleta' ? {} : paginar(busqueda === 'html' ? [{ ...rutas[0], nombre_ruta: '<b>Texto ficticio</b>' }] : rutas.filter(r => busqueda === 'lenta' || r.nombre_ruta.toLowerCase().includes(busqueda.toLowerCase())));
+  if (config.url === '/rutas') data = busqueda === 'incompleta' ? {} : catalogo === 'vacio' ? paginar([]) : paginar(busqueda === 'html' ? [{ ...rutas[0], nombre_ruta: '<b>Texto ficticio</b>' }] : rutas.filter(r => busqueda === 'lenta' || r.nombre_ruta.toLowerCase().includes(busqueda.toLowerCase())));
   else if (config.url === '/micros/activos') data = Number(params.ruta_id) === 5 ? error(500) : paginar(micros(Number(params.ruta_id)));
   else if (config.url?.startsWith('/rutas/')) {
     const id = Number(config.url.split('/').pop());
@@ -96,9 +110,15 @@ export function EscenaMarcadores() {
     {microsMapa.map(m => <button className="cp-boton" key={m.id} aria-pressed={seleccionado === m.id} onClick={() => establecerSeleccionado(m.id)}>{m.placa}</button>)}
     <p role="status">Detalle ficticio seleccionado: {seleccionado ?? 'ninguno'}</p></div>;
 }
-const accesoNoDisponible = async (): Promise<never> => { throw new Error('La escena de QA no realiza operaciones de cuenta.'); };
+let cuentas = 0;
+const accesoNoDisponible = async (): Promise<never> => {
+  document.documentElement.dataset.cuentas = String(++cuentas);
+  await new Promise(resolve => setTimeout(resolve, 120));
+  throw new Error('La escena de QA no realiza operaciones de cuenta.');
+};
 // Una sesión guardada en el navegador nunca dispara /auth/me desde esta escena.
 const invitado = { user: null, token: null, isAuthenticated: false, isLoading: false,
   sessionError: null, sessionNotice: null, login: accesoNoDisponible, register: accesoNoDisponible,
   logout: async () => false, retrySession: () => {} };
-createRoot(document.getElementById('root')!).render(<StrictMode>{modo === 'marcadores' ? <EscenaMarcadores /> : <AuthContext.Provider value={invitado}><ConsultaPublica /></AuthContext.Provider>}</StrictMode>);
+const pantalla = new URLSearchParams(location.search).get('pantalla');
+createRoot(document.getElementById('root')!).render(<StrictMode>{modo === 'marcadores' ? <EscenaMarcadores /> : <AuthContext.Provider value={invitado}>{pantalla === 'inicio' ? <Inicio /> : pantalla === 'registro' || pantalla === 'login' ? <MemoryRouter><InicioSesion registro={pantalla === 'registro'} /></MemoryRouter> : <ConsultaPublica />}</AuthContext.Provider>}</StrictMode>);

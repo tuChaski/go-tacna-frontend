@@ -1,5 +1,9 @@
 # Entrega de T058
 
+Continuación visual en esta misma rama: consultar
+[la entrega del rediseño público](../publico/entrega-rediseno.md).
+Los resultados siguientes documentan la entrega original de T058.
+
 Revisión final: 27/11/2026. Rama `feature/T058-visor-mapa`, PR hacia `develop`.
 La implementación frontend queda preparada para revisión. El cierre integral
 y la publicación siguen condicionados a los pendientes de backend.

@@ -1,0 +1,40 @@
+/* SVG de la web pública y acceso: sin afectar iconos administrativos. */
+.gt-web,.acceso {
+  --gt-icono-fondo: #eff6ff;
+  --gt-icono-blanco: #ffffff;
+  --gt-icono-espacio: 8px;
+  --gt-icono-radio: 12px;
+  --gt-icono-superficie: 40px;
+}
+.gt-icono { display: inline-block; flex-shrink: 0; vertical-align: middle; }
+.gt-web .gt-icono-superficie {
+  display: inline-grid;
+  place-items: center;
+  width: var(--gt-icono-superficie);
+  height: var(--gt-icono-superficie);
+  flex-shrink: 0;
+  border: 1px solid var(--gt-borde);
+  border-radius: var(--gt-icono-radio);
+  background: var(--gt-icono-fondo);
+  color: #2563eb;
+}
+.gt-web .gt-kicker-con-icono,
+.gt-web .gt-acceso-cuenta,
+.gt-web .gt-preview-ubicacion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gt-icono-espacio);
+}
+.gt-web .gt-acceso-cuenta { white-space: nowrap; }
+.gt-web .gt-ruta-boton[aria-expanded=true] > .gt-icono { transform: rotate(180deg); }
+.gt-web .gt-empresas .gt-icono-superficie {
+  border-color: #ffffff26;
+  background: #ffffff0d;
+  color: #bfdbfe;
+}
+.gt-web .gt-demo-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}

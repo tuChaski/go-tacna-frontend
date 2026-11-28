@@ -34,14 +34,13 @@ frame.onload = () => setTimeout(medir, 500);
 
 const boton = nombre => [...doc().querySelectorAll('button')].find(b => b.getAttribute('aria-label') === nombre || b.textContent.trim() === nombre);
 const clic = nombre => { const b = boton(nombre); if (!b || b.disabled) throw new Error('Botón no disponible: ' + nombre); b.click(); };
-async function buscar(texto) {
+function escribir(texto) {
   const input = doc().querySelector('#buscar-ruta-publica');
   Object.getOwnPropertyDescriptor(ventana().HTMLInputElement.prototype, 'value').set.call(input, texto);
   const Evento = ventana().Event;
   input.dispatchEvent(new Evento('input', { bubbles: true }));
-  await pausa(0);
-  doc().querySelector('form').dispatchEvent(new Evento('submit', { bubbles: true, cancelable: true }));
 }
+async function buscar(texto) { escribir(texto); await pausa(350); }
 async function escena(modo = 'normal') {
   frame.src = '/pruebas/escena-visor.html?ruta=1&modo=' + modo;
   await new Promise(resolve => frame.addEventListener('load', resolve, { once: true }));
@@ -54,12 +53,13 @@ document.querySelector('#comprobar').onclick = async evento => {
   try {
     await escena(); await esperar(() => doc().querySelector('.maplibregl-canvas') && !doc().querySelector('.cp-aviso-mapa'));
     comprobar(!doc().documentElement.dataset.errorMapa, 'Worker, estilo y tesela ficticia sin errores');
-    for (const ancho of [320, 390, 768, 1440]) {
+    for (const ancho of [320, 360, 390, 768, 1024, 1280, 1440, 1920]) {
       frame.width = ancho; await pausa(80);
       comprobar(doc().documentElement.scrollWidth <= ventana().innerWidth, 'Sin desbordamiento a ' + ancho + ' px');
       comprobar(doc().querySelectorAll('.maplibregl-canvas').length === 1, 'Un solo mapa a ' + ancho + ' px');
     }
     comprobar(Boolean(doc().querySelector('.maplibregl-ctrl-attrib-inner a')), 'Atribución visible en el mapa');
+    const mapaInicial = doc().querySelector('.maplibregl-canvas');
     clic('Acercar mapa'); clic('Alejar mapa'); clic('Ver todo el recorrido');
     comprobar(Boolean(doc().querySelector('#ruta-seleccionada-titulo')), 'Controles de cámara conservan la consulta');
     doc().querySelector('#micro-publico-101').click();
@@ -81,22 +81,45 @@ document.querySelector('#comprobar').onclick = async evento => {
     comprobar(doc().querySelector('.cp-error').textContent.includes('ya no está disponible'), 'Registro retirado 404');
     doc().querySelector('#ruta-publica-5').click(); await esperar(() => doc().querySelector('.cp-unidades .cp-error'));
     comprobar(Boolean(doc().querySelector('.cp-visor')), 'Error 500 de unidades conserva el mapa');
-    await buscar('error500'); await esperar(() => doc().querySelector('.cp-directorio .cp-error'));
+    comprobar(doc().querySelector('.maplibregl-canvas') === mapaInicial, 'Cambiar rutas no recrea el mapa');
+    const anteriores = JSON.parse(doc().documentElement.dataset.consultas).length;
+    escribir('n'); await pausa(60); escribir('no'); await pausa(60); escribir('nombre largo');
+    await esperar(() => doc().querySelector('#ruta-publica-9'));
+    const nuevas = JSON.parse(doc().documentElement.dataset.consultas).slice(anteriores);
+    comprobar(nuevas.length === 1 && nuevas[0].search === 'nombre largo' && nuevas[0].page === 1, 'Debounce envía solo el último término al catálogo completo');
+    await buscar('error500'); await esperar(() => doc().querySelector('.cp-explorador .cp-error'));
     comprobar(Boolean(doc().querySelector('.cp-ruta-detalle')), 'Error de catálogo conserva la selección');
-    await buscar('incompleta'); await esperar(() => doc().querySelector('.cp-directorio .cp-error')?.textContent.includes('incompleta'));
+    await buscar('incompleta'); await esperar(() => doc().querySelector('.cp-explorador .cp-error')?.textContent.includes('incompleta'));
     comprobar(true, 'Respuesta incompleta identificada');
-    await buscar('red'); await esperar(() => doc().querySelector('.cp-directorio .cp-error')?.textContent.includes('interrumpida'));
+    await buscar('red'); await esperar(() => doc().querySelector('.cp-explorador .cp-error')?.textContent.includes('interrumpida'));
     comprobar(true, 'Conexión interrumpida identificada en transporte ficticio');
     await buscar('lenta'); await pausa(60); await buscar('html');
     await esperar(() => doc().querySelector('.cp-tarjeta-ruta')?.textContent.includes('<b>Texto ficticio</b>'));
     await pausa(1700);
+    comprobar(JSON.parse(doc().documentElement.dataset.consultas).some(c => c.search === 'lenta' && c.abortada), 'La búsqueda anterior recibe cancelación');
     comprobar(!doc().querySelector('.cp-tarjeta-ruta b') && doc().querySelector('.cp-tarjeta-ruta').textContent.includes('<b>'), 'Respuesta tardía descartada y HTML como texto');
-    clic('Ver todas'); await esperar(() => doc().querySelector('#ruta-publica-8'));
+    clic('Limpiar búsqueda'); await esperar(() => doc().querySelector('#ruta-publica-8'));
+    comprobar(doc().querySelector('#ruta-seleccionada-titulo').textContent === 'Ruta ficticia 5', 'Limpiar búsqueda conserva ruta seleccionada');
     clic('Página siguiente de rutas'); await esperar(() => doc().querySelector('#ruta-publica-9'));
-    for (const ancho of [320, 390, 768, 1440]) {
+    for (const ancho of [320, 360, 390, 768, 1024, 1280, 1440, 1920]) {
       frame.width = ancho; await pausa(80);
       comprobar(doc().documentElement.scrollWidth <= ventana().innerWidth, 'Nombre largo sin desbordamiento a ' + ancho + ' px');
     }
+    clic('Página anterior de rutas'); await esperar(() => doc().querySelector('#ruta-publica-1'));
+    doc().querySelector('#ruta-publica-1').click(); await esperar(() => doc().querySelector('#micro-publico-101'));
+    doc().querySelector('#micro-publico-101').click(); await esperar(() => doc().querySelector('.cp-ficha-micro dl'));
+    clic('Cerrar ruta seleccionada'); await pausa(40);
+    comprobar(doc().activeElement.id === 'ruta-publica-1' && !doc().querySelector('.cp-ficha-micro'), 'Cerrar ruta devuelve el foco y retira detalle');
+    doc().querySelector('#ruta-publica-1').click(); await esperar(() => doc().querySelector('#micro-publico-101'));
+    comprobar(!doc().querySelector('.cp-ficha-micro'), 'Volver a una ruta comienza sin unidad anterior');
+    for (const [ancho, alto] of [[1366,768],[1440,900],[844,390]]) {
+      frame.width = ancho; frame.height = alto; frame.style.height = alto + 'px'; await pausa(120);
+      ventana().scrollTo(0,0);
+      const mapa = doc().querySelector('.cp-lienzo-mapa').getBoundingClientRect();
+      comprobar(doc().documentElement.scrollWidth <= ventana().innerWidth, 'Consulta sin desbordamiento en ' + ancho + '×' + alto);
+      if (ancho > 900) comprobar(mapa.top < alto / 2 && mapa.bottom <= alto, 'Mapa visible al entrar en ' + ancho + '×' + alto);
+    }
+    frame.style.height = '600px';
     await escena('marcadores');
     doc().querySelector('.cp-marcador').click();
     await esperar(() => doc().querySelector('.cp-marcador[aria-pressed="true"]'));
