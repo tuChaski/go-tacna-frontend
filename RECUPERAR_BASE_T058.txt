@@ -1,0 +1,83 @@
+RECUPERAR LA BASE WEB ANTES DE T058
+Revisión: 26/11/2026. Ejecuta Alex manualmente. No se ha ejecutado esta recuperación.
+
+Motivo comprobado en GitHub:
+- PR #129: feature/T057-consulta-publica -> main, integrado por error de destino.
+- PR #130: revert-129-feature/T057-consulta-publica -> develop, integrado.
+- Commit de reversión: 90b0cd2e41e5dbc0b84b5871ee5ba5e05f37f65f.
+- La reversión retiró también panel, autenticación, renovación de sesión y pruebas.
+- T057 ya es ancestro de develop: volver a fusionar su rama no recuperará los archivos.
+- Esta propuesta recupera la base en un PR separado hacia develop.
+- No cambia main ni publica la aplicación. La privacidad de la API sigue pendiente de backend.
+
+1. Desde la raíz de go-tacna-frontend, revisar que solo esté el contexto nuevo
+   y no haya cambios propios de código sin guardar. Conservar los archivos de
+   contexto como archivos locales, sin añadirlos al commit de recuperación.
+
+git status --short
+git fetch origin
+git switch develop
+git pull --ff-only origin develop
+git switch -c fix/restaurar-base-web
+git revert --no-commit 90b0cd2e41e5dbc0b84b5871ee5ba5e05f37f65f
+git diff --cached --stat
+git diff --cached --check
+
+No continuar si Git muestra conflictos o si develop cambió y la diferencia
+incluye cambios inesperados. Revisar esos cambios antes de confirmar.
+
+2. Instalar y ejecutar las comprobaciones de la base recuperada:
+
+npm ci
+npm run lint
+npm run build
+npm run test:auth
+npm run test:sesion
+npm run test:rutas
+npm run test:publico
+
+Estas comprobaciones deben ejecutarse DESPUÉS de recuperar la base. No se han
+ejecutado en esta revisión, ni se presentan sus resultados antiguos como nuevos.
+La comprobación pública contra Laravel es de solo lectura y opcional en este PR:
+
+npm run test:publico:api
+
+3. Si las comprobaciones pasan, confirmar únicamente la recuperación que
+   git revert --no-commit ya dejó en el área de preparación:
+
+git diff --cached --name-only
+git commit -m "fix(public): recupera la base web retirada de develop" -m "Restaura consulta pública, panel y renovación de sesión tras el PR #130. Refs: T057, T059, T102"
+git push -u origin fix/restaurar-base-web
+
+4. Crear MANUALMENTE un PR en GitHub:
+
+Origen: fix/restaurar-base-web
+Destino: develop
+Título: fix(public): recupera la base web retirada de develop
+
+Descripción propuesta:
+
+La reversión #130 aplicada a develop retiró la consulta pública de T057 y
+funciones previas del panel y la sesión. Este PR invierte ese cambio y recupera
+la base necesaria para T058. El PR original #129 se había integrado en main
+por un error de destino; esta corrección se dirige exclusivamente a develop.
+
+Validación: completar con los resultados reales de lint, build y las pruebas
+de autenticación, sesión, rutas y consulta pública al ejecutarlas.
+
+La exposición de datos personales en la API pública sigue pendiente del equipo
+backend. Este PR no modifica backend ni resuelve ese pendiente. No implica
+autorización para desplegar la consulta públicamente.
+
+Refs: T057, T059, T102. Prepara la base para T058 (#94).
+
+5. Después de aprobar e integrar ese PR en develop, actualizar la rama T058:
+
+git fetch origin
+git switch feature/T058-visor-mapa
+git merge origin/develop
+git status --short
+git ls-files src/modulos/consulta-publica src/modulos/administracion src/services/sesion-http.ts
+
+Entonces continuar la implementación de T058 con MapLibre GL JS. Su commit y PR
+deben contener los cambios del visor, separados de esta recuperación de la base.

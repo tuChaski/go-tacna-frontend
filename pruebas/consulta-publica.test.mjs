@@ -14,16 +14,19 @@ const signal = () => new AbortController().signal;
 
 test('selecciona solo campos públicos, sin conservar identidad ni historial del conductor', () => {
   const original = { ...micro(), conductor_actual: { usuario: { dni: 'FICTICIO', correo: 'ficticio@example.com', password_hash: 'NO-REAL' } }, posiciones: [{ ubicacion: 'PRUEBA' }], ultima_posicion: {} };
-  assert.deepEqual(Object.keys(adaptarMicro(original, 1)).sort(), ['id', 'placa', 'rutaId', 'estado', 'capacidad', 'empresa'].sort());
+  assert.deepEqual(Object.keys(adaptarMicro(original, 1)).sort(), ['id', 'placa', 'rutaId', 'estado', 'capacidad', 'empresa', 'posicion'].sort());
+  assert.equal(adaptarMicro(original, 1).posicion, null);
   assert.ok(!JSON.stringify(adaptarMicro(original, 1)).includes('FICTICIO'));
   assert.deepEqual(Object.keys(adaptarRuta({ ...ruta(), micros: [original] })).sort(), ['id', 'nombre', 'empresa', 'coordenadas'].sort());
 });
 test('una ruta sin geometría sigue en el catálogo y no recibe un trazado inventado', () => {
   assert.deepEqual(adaptarRuta({ ...ruta(), trazado_ruta: null }).coordenadas, []);
 });
-test('rechaza geometría incompatible, coordenadas no finitas y fuera de rango', () => {
+test('descarta geometría incompatible sin impedir la consulta de la ruta', () => {
   for (const trazado of [{ type: 'Point', coordinates: [] }, { type: 'LineString', coordinates: [[Infinity, 0]] }, { type: 'LineString', coordinates: [[0, 91]] }, { type: 'LineString', coordinates: ['invalido'] }]) {
-    assert.throws(() => adaptarRuta({ ...ruta(), trazado_ruta: trazado }));
+    const resultado = adaptarRuta({ ...ruta(), trazado_ruta: trazado });
+    assert.deepEqual(resultado.coordenadas, []);
+    assert.equal(resultado.trazadoInvalido, true);
   }
 });
 test('no presenta rutas inactivas ni empresas explícitamente inactivas', () => {

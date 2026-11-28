@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Revisión local T058</title>
+<style>
+body{font:16px/1.5 system-ui;margin:16px;background:#e2e8f0;color:#0f172a}h1{font-size:22px;margin:0}button,select{font:inherit;padding:10px;margin:4px;border:1px solid #94a3b8;border-radius:8px;background:white}button:focus-visible{outline:3px solid #2563eb}pre{white-space:pre-wrap;padding:10px;background:white;border-radius:8px}#espacio{overflow:auto;background:#cbd5e1;padding:8px}iframe{height:600px;border:0;background:white;display:block}label{display:inline-block}
+</style></head><body>
+<h1>T058 · Revisión local con datos ficticios</h1>
+<p>Esta página de desarrollo no consulta Laravel ni descarga teselas reales. El fondo liso es una tesela de prueba.</p>
+<div id="anchos"><button data-ancho="320">320 px</button><button data-ancho="390">390 px</button><button data-ancho="768">768 px</button><button data-ancho="1440">1440 px</button></div>
+<label>Escenario <select id="escenario"><option value="normal">Catálogo y recorrido</option><option value="sin-webgl">Navegador sin WebGL</option><option value="teselas">Fallo de teselas</option><option value="marcadores">Marcadores autorizados ficticios</option></select></label>
+<button id="perder">Perder contexto WebGL</button><button id="restaurar">Restaurar contexto</button><button id="medir">Medir ancho y foco</button>
+<button id="comprobar">Ejecutar comprobaciones de interfaz</button><button id="teclado">Enfocar mapa para probar Tab</button>
+<pre id="resultado" role="status">Cargando escena de prueba…</pre>
+<pre id="comprobaciones" role="status"></pre>
+<div id="espacio"><iframe id="escena" title="Consulta T058 de prueba" width="390" src="/pruebas/escena-visor.html?ruta=1"></iframe></div>
+<script type="module">import('/pruebas/revision-visor.mjs').catch(error => { document.querySelector('#comprobaciones').textContent = 'Error al iniciar la revisión: ' + error.message; });</script></body></html>

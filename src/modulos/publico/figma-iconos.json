@@ -1,0 +1,33 @@
+{
+  "fileKey": "h0akCkRIkOEypdBAsatF5A",
+  "url": "https://www.figma.com/design/h0akCkRIkOEypdBAsatF5A?node-id=3-93",
+  "pageId": "0:1",
+  "referenceFrameId": "3:93",
+  "sampleComponentId": "3:79",
+  "iconComponents": {
+    "bus": "3:31",
+    "ruta": "3:36",
+    "mapa": "3:41",
+    "pasajero": "3:45",
+    "empresa": "3:52",
+    "buscar": "3:56",
+    "privacidad": "3:60",
+    "ubicacion": "3:64",
+    "encuadrar": "3:74",
+    "actualizar": "3:78"
+  },
+  "semanticVariables": {
+    "marca": "VariableID:3:10",
+    "tinta": "VariableID:3:11",
+    "suave": "VariableID:3:12",
+    "borde": "VariableID:3:13",
+    "fondo": "VariableID:3:14",
+    "blanco": "VariableID:3:15",
+    "espacio": "VariableID:3:16",
+    "radio": "VariableID:3:17",
+    "superficie": "VariableID:3:18"
+  },
+  "font": "Inter",
+  "source": "Lucide React instalado en el proyecto",
+  "review": "SVG editables, 10 instancias de iconos, 20 instancias totales, tipografía Inter y muestras uniformes de 160 px."
+}
